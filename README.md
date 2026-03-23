@@ -9,8 +9,8 @@ Avoir **Docker** et **Docker Compose** installés sur votre machine.
 
 ### 2. Clonage et Lancement
 ```bash
-git clone <URL_DE_VOTRE_REPO>
-cd jumeaux_numeriques
+git clone https://github.com/franck504/smart_home_digital_twin_backend.git
+cd smart_home_digital_twin_backend
 
 # Lancer le projet
 export DOCKER_HOST=unix:///var/run/docker.sock # Uniquement si vous êtes sous Linux/Parrot
