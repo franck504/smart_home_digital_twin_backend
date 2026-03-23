@@ -13,9 +13,11 @@ git clone https://github.com/franck504/smart_home_digital_twin_backend.git
 cd smart_home_digital_twin_backend
 
 # Lancer le projet
-export DOCKER_HOST=unix:///var/run/docker.sock # Uniquement si vous êtes sous Linux/Parrot
 docker compose up -d --build
 ```
+
+### 💡 Note pour Linux/Parrot OS
+Si vous obtenez une erreur de connexion au socket Docker, lancez cette commande avant : `export DOCKER_HOST=unix:///var/run/docker.sock`
 
 ### 3. Accès aux interfaces
 - **API Interactive (Swagger) :** [http://localhost:8000/docs](http://localhost:8000/docs)

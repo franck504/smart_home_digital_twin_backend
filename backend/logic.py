@@ -1,7 +1,5 @@
 from .models import HouseState
-import random
-
-import httpx
+import httpx # Assurez-vous d'avoir fait 'pip install httpx' dans votre venv
 import os
 
 # La clé API est récupérée via les variables d'environnement pour plus de sécurité sur Git

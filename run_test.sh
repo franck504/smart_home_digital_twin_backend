@@ -2,9 +2,6 @@
 
 # Script de Test Automatisé - Jumeau Numérique 🏠🚀
 
-# 0. Protection Docker (Linux/Parrot) - Forcer le socket Docker standard
-export DOCKER_HOST=unix:///var/run/docker.sock
-
 # 1. Lancement des services avec reconstruction du backend
 echo "--- Lancement des services Docker ---"
 docker compose up -d --build

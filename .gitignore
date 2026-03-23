@@ -20,3 +20,6 @@ influx_data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Personal Scripts (Parrot/Linux)
+run_test_parrot.sh
