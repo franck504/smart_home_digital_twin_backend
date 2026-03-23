@@ -14,7 +14,7 @@ cd smart_home_digital_twin_backend
 
 # Lancer le projet
 export DOCKER_HOST=unix:///var/run/docker.sock # Uniquement si vous êtes sous Linux/Parrot
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### 3. Accès aux interfaces

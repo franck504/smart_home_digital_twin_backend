@@ -14,7 +14,7 @@ Clonez le dépôt et lancez la commande suivante à la racine du projet :
 export DOCKER_HOST=unix:///var/run/docker.sock
 
 # Lancer tous les services
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### Services déployés :
@@ -35,11 +35,11 @@ Vous pouvez modifier ces variables dans le fichier `docker-compose.yml` :
   ```
 - **Redémarrer un service :**
   ```bash
-  docker-compose restart backend
+  docker compose restart backend
   ```
 - **Arrêter le projet :**
   ```bash
-  docker-compose down
+  docker compose down
   ```
 
 ---
