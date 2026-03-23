@@ -22,6 +22,13 @@ docker-compose up -d --build
 - **Base de données (InfluxDB) :** [http://localhost:8086](http://localhost:8086) (Login: `admin` / Pass: `adminpassword`)
 - **Flux Temps Réel :** `ws://localhost:8000/ws`
 
+## 🧪 Tests Unitaires
+Pour valider la logique du "Cerveau" sans matériel :
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+pytest backend/tests/test_logic.py
+```
+
 ## 📖 Documentation détaillée
 Tout ce dont vous avez besoin pour comprendre le projet se trouve dans le dossier [**`/guides`**](file:///guides/) :
 - [Architecture du système](file:///guides/ARCHITECTURE.md)

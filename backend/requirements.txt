@@ -5,3 +5,5 @@ pydantic
 python-multipart
 influxdb-client
 httpx
+pytest
+pytest-asyncio
