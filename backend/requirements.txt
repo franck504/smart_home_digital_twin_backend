@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+paho-mqtt
+pydantic
+python-multipart
+influxdb-client
+httpx
