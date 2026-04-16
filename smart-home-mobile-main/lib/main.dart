@@ -22,16 +22,41 @@ class SmartHomeApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF0F172A), // Deep slate
-        textTheme:
-            GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
-          bodyColor: Colors.white,
-          displayColor: Colors.white,
+        scaffoldBackgroundColor: Colors.black,
+        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).copyWith(
+          displayMedium: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+          titleLarge: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+          titleMedium: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          bodyLarge: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+          ),
+          bodyMedium: const TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
+          ),
+          labelSmall: const TextStyle(
+            fontSize: 11,
+            color: Colors.white60,
+          ),
         ),
-        cardTheme: const CardThemeData(
-          color: Color(0xFF1E293B), // Lighter slate
+        cardTheme: CardThemeData(
+          color: const Color(0xFF0A0A0A), // Gris neutre ultra-sombre
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
           ),
           elevation: 0,
         ),

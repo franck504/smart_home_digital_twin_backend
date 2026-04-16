@@ -12,15 +12,16 @@ BUCKET = os.getenv("INFLUXDB_BUCKET", "jumeau_bucket")
 client = InfluxDBClient(url=URL, token=TOKEN, org=ORG)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-def save_sensor_data(temperature: float, luminosity: float, presence_salon: bool):
+def save_sensor_data(room: str, temperature: float, luminosity: float, presence: bool):
     """
-    Enregistre les données de capteurs dans InfluxDB.
+    Enregistre les données de capteurs dans InfluxDB par pièce.
     """
     point = Point("environment") \
+        .tag("room", room) \
         .tag("host", "wokwi_esp32") \
         .field("temperature", float(temperature)) \
         .field("luminosity", float(luminosity)) \
-        .field("presence_salon", int(presence_salon)) \
+        .field("presence", int(presence)) \
         .time(datetime.utcnow(), WritePrecision.NS)
     
     try:

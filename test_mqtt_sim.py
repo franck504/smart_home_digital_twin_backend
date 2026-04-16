@@ -3,27 +3,40 @@ import json
 import time
 import random
 
-def simulate_esp32():
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+MQTT_BROKER = "localhost"
+MQTT_TOPIC = "home/sensors"
+
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+
+def generate_room_data(base_temp, base_lum):
+    return {
+        "temperature": round(base_temp + random.uniform(-0.5, 0.5), 1),
+        "presence": random.choice([True, False]),
+        "luminosity": max(0, int(base_lum + random.uniform(-50, 50)))
+    }
+
+def simulate():
+    print(f"Connexion au broker {MQTT_BROKER}...")
     try:
-        client.connect("localhost", 1883, 60)
-        print("Simulateur ESP32 connecté au broker MQTT.")
+        client.connect(MQTT_BROKER, 1883, 60)
     except Exception as e:
-        print(f"Erreur : Est-ce qu'un broker MQTT (mosquitto) tourne sur localhost ? {e}")
+        print(f"Erreur de connexion : {e}")
         return
 
-    while True:
-        # Simulation de données capteurs
-        data = {
-            "temperature": round(random.uniform(15.0, 30.0), 1),
-            "presence_salon": random.choice([True, False]),
-            "presence_cuisine": random.choice([True, False]),
-            "luminosity": random.uniform(200, 800)
-        }
-        
-        print(f"Publication : {data}")
-        client.publish("home/sensors", json.dumps(data))
-        time.sleep(5)
+    print("Simulation multi-zone démarrée (Ctrl+C pour arrêter)")
+    try:
+        while True:
+            data = {
+                "salon": generate_room_data(22.0, 500),
+                "cuisine": generate_room_data(24.0, 200)
+            }
+            
+            client.publish(MQTT_TOPIC, json.dumps(data))
+            print(f"Publié : {data}")
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("Arrêt de la simulation.")
+        client.disconnect()
 
 if __name__ == "__main__":
-    simulate_esp32()
+    simulate()

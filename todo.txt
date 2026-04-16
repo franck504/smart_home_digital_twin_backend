@@ -1,0 +1,5 @@
+1 - creer un ui ou widget pour afficher le source d'energie actif : solaire ou reseau ; rendre dynamique cette affichage en cas de basculement conditionnel
+2 - dans les salles : il faut ajouter un petit icon-lampe dans un des coins du card pour indiquer si la lumiere est allumée ou pas
+3 - afficher la prevision meteo dans une autre nouvelle section
+4 - pour la securite et longevite de la batterie , il faut quand meme rendre possible le basculement automatique vers "grid" ou "solar" en fonction de la prevision meteo et de la consommation de la maison , c'ets a dire que la condition double entre BATTERY_LEVEL et METEO soit OU mais pas ET
+5 - et si on change  : si chaque salle a son propre temperature , Luminosité, presence , 

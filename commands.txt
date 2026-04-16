@@ -10,12 +10,26 @@ docker compose up -d
 source backend/venv/bin/activate
 python3 test_mqtt_sim.py &
 
-## 🌡️ Simulation Manuelle (Contrôle précis)
-# Changer la température à 32°C (Chaud) - Force le mode COOL si AUTO
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'temperature': 32.0, 'presence_salon': True, 'presence_cuisine': False, 'luminosity': 600})); c.disconnect()"
+## 🌡️ Simulation Manuelle (Contrôle par zone)
+# Simuler une vague de chaleur (Chaud dans le salon)
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 32.0, 'presence': True, 'luminosity': 800}, 'cuisine': {'temperature': 24.0, 'presence': False, 'luminosity': 200}})); c.disconnect()"
 
-# Changer la température à 15°C (Froid) - Force le mode HEAT si AUTO
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'temperature': 15.0, 'presence_salon': True, 'presence_cuisine': False, 'luminosity': 400})); c.disconnect()"
+# Simuler un froid intense (Partout)
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 15.0, 'presence': True, 'luminosity': 400}, 'cuisine': {'temperature': 14.0, 'presence': True, 'luminosity': 150}})); c.disconnect()"
+
+## 💡 Simulation de Luminosité & Présence
+# Simuler le matin (Lumière dans la cuisine, personne au salon)
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 21.0, 'presence': False, 'luminosity': 100}, 'cuisine': {'temperature': 22.0, 'presence': True, 'luminosity': 1200}})); c.disconnect()"
+
+# Simuler la soirée (Présence au salon, faible luminosité)
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 22.0, 'presence': True, 'luminosity': 50}, 'cuisine': {'temperature': 20.0, 'presence': False, 'luminosity': 10}})); c.disconnect()"
+
+## ⚡ Gestion Énergétique (Basculement Solaire/Réseau)
+# Simuler une batterie CRITIQUE (Passage sur RÉSEAU)
+curl -X POST "http://localhost:8000/control/energy/battery?level=15"
+
+# Simuler une batterie PLEINE (Repassage sur SOLAIRE)
+curl -X POST "http://localhost:8000/control/energy/battery?level=100"
 
 ## ⏹️ Arrêt du Système
 # Arrêter le simulateur
