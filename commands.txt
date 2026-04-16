@@ -1,0 +1,25 @@
+# 🏠 Commandes Utiles - Jumeau Numérique Smart Home
+
+## 🚀 Démarrage du Système
+# Démarrer les serveurs (API, MQTT, DB)
+sudo systemctl start docker
+export DOCKER_HOST=unix:///var/run/docker.sock
+docker compose up -d
+
+# Lancer la simulation automatique (Capteurs aléatoires)
+source backend/venv/bin/activate
+python3 test_mqtt_sim.py &
+
+## 🌡️ Simulation Manuelle (Contrôle précis)
+# Changer la température à 32°C (Chaud) - Force le mode COOL si AUTO
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'temperature': 32.0, 'presence_salon': True, 'presence_cuisine': False, 'luminosity': 600})); c.disconnect()"
+
+# Changer la température à 15°C (Froid) - Force le mode HEAT si AUTO
+python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'temperature': 15.0, 'presence_salon': True, 'presence_cuisine': False, 'luminosity': 400})); c.disconnect()"
+
+## ⏹️ Arrêt du Système
+# Arrêter le simulateur
+pkill -f test_mqtt_sim.py
+
+# Arrêter les serveurs Docker
+docker compose down

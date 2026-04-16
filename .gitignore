@@ -23,3 +23,23 @@ Thumbs.db
 
 # Personal Scripts (Parrot/Linux)
 run_test_parrot.sh
+
+# Flutter / Dart
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.packages
+**/pubspec.lock
+**/.metadata
+
+# Android / Gradle
+**/.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/*.iml
+**/*.ipr
+**/*.iws
+.gradle/
