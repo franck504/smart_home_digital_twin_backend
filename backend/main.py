@@ -92,28 +92,41 @@ async def process_state_update():
     
     await sync_and_broadcast()
 
-@app.get("/state")
+@app.get("/state", tags=["Global"], summary="Récupérer l'état complet du jumeau numérique")
 async def get_state():
+    """
+    Retourne la structure complète HouseState, comprenant les pièces, les configurations, et la matrice énergétique.
+    """
     return current_state
 
-@app.post("/control/{room}/light")
+@app.post("/control/{room}/light", tags=["Éclairage"], summary="Contrôler la lumière principale d'une pièce")
 async def toggle_light(room: str, state: bool = Query(...)):
+    """
+    Allume (true) ou éteint (false) la lumière dans la pièce spécifiée. Rejette la requête si la pièce est introuvable.
+    """
     if room in current_state.rooms:
         current_state.rooms[room].lights = state
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "lights": state}
     return {"status": "error", "message": "Room not found"}
 
-@app.post("/control/{room}/climatisation/mode")
+@app.post("/control/{room}/climatisation/mode", tags=["Climatisation"], summary="Définir le mode de régulation (AUTO/MANUAL)")
 async def set_clim_mode(room: str, mode: Literal["AUTO", "MANUAL"] = Query(...)):
+    """
+    Permet de basculer la logique de thermostat d'une pièce spécifique entre automatique et manuel.
+    """
     if room in current_state.rooms:
         current_state.rooms[room].climatisation_mode = mode
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "mode": mode}
     return {"status": "error", "message": "Room not found"}
 
-@app.post("/control/{room}/climatisation/set")
+@app.post("/control/{room}/climatisation/set", tags=["Climatisation"], summary="Forcer l'état de la climatisation (MANUAL mode)")
 async def set_climatisation(room: str, value: Literal["OFF", "HEAT", "COOL"] = Query(...)):
+    """
+    Force l'allumage physique de la clim (Froid, Chaud ou Éteint). 
+    Cette action bascule automatiquement la régulation de la pièce en mode 'MANUAL'.
+    """
     if room in current_state.rooms:
         r = current_state.rooms[room]
         r.climatisation = value
@@ -122,19 +135,26 @@ async def set_climatisation(room: str, value: Literal["OFF", "HEAT", "COOL"] = Q
         return {"status": "ok", "room": room, "value": value}
     return {"status": "error", "message": "Room not found"}
 
-@app.post("/control/{room}/climatisation/target_temp")
+@app.post("/control/{room}/climatisation/target_temp", tags=["Climatisation"], summary="Configurer la température cible (Thermostat)")
 async def set_target_temp(room: str, temp: float = Query(..., ge=10, le=35)):
+    """
+    Définit la température de consigne souhaitée pour la pièce spécifiée.
+    Cette action replace automatiquement la régulation de la pièce en mode intelligent 'AUTO'.
+    """
     if room in current_state.rooms:
         r = current_state.rooms[room]
         r.temperature_de_regulation = temp
-        r.climatisation_mode = "AUTO" # On repasse en AUTO quand on change la consigne ? 
-        # Ou on reste en MANUAL ? Généralement changer la consigne fait partie du mode AUTO.
+        r.climatisation_mode = "AUTO" 
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "target_temp": temp}
     return {"status": "error", "message": "Room not found"}
 
-@app.post("/control/energy/battery")
+@app.post("/control/energy/battery", tags=["Énergie"], summary="Simuler un changement dans la réserve de batterie")
 async def set_battery(level: float = Query(..., ge=0, le=100)):
+    """
+    API de simulation : Modifie artificiellement l'état de la batterie entre 0% et 100%.
+    Déclenche le recalcul de la stratégie énergétique (bascule réseau si critique).
+    """
     current_state.energy.battery_level = level
     await process_state_update()
     return {"status": "ok", "battery_level": level}
