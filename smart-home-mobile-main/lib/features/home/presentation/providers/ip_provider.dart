@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError();
@@ -7,13 +8,13 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 
 class IpNotifier extends Notifier<String> {
   static const _ipKey = 'backend_ip';
-  static const _defaultIp = '10.169.109.181';
 
   @override
   String build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    return prefs.getString(_ipKey) ?? _defaultIp;
+    return prefs.getString(_ipKey) ?? ApiConstants.currentIp;
   }
+
 
   Future<void> updateIp(String newIp) async {
     final prefs = ref.read(sharedPreferencesProvider);
