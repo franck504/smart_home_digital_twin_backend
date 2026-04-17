@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/house_state_model.dart';
 import '../../data/services/api_service.dart';
@@ -20,16 +21,27 @@ final websocketServiceProvider = Provider((ref) {
 
 final houseStateProvider = StreamProvider<HouseState>((ref) async* {
   final ip = ref.watch(ipProvider);
+  debugPrint('🔌 [houseStateProvider] Tentative de connexion avec IP = $ip');
   
   try {
     // Ping HTTP avec timeout de 5 secondes pour vérifier l'IP
     final url = Uri.parse('http://$ip:8000/state');
-    await http.get(url).timeout(const Duration(seconds: 5));
+    debugPrint('🌐 [houseStateProvider] Ping HTTP vers : $url');
+    
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
+    debugPrint('✅ [houseStateProvider] Réponse HTTP Reçue : ${response.statusCode}');
+    
+    if (response.statusCode != 200) {
+      throw Exception('Réseau accessible mais erreur serveur : ${response.statusCode}');
+    }
     
     // Si la requête HTTP réussit, on ouvre le WebSocket
+    debugPrint('🚀 [houseStateProvider] HTTP OK, Initialisation du WebSocket...');
     final wsService = ref.watch(websocketServiceProvider);
     yield* wsService.connect();
   } catch (e) {
+    debugPrint('❌ [houseStateProvider] Échec de connexion : $e');
     throw Exception('Connexion au serveur locale impossible ($e)');
   }
 });
+
