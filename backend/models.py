@@ -11,7 +11,7 @@ class RoomState(BaseModel):
     lights: bool = Field(False, description="État de la lumière")
     climatisation_mode: Literal["AUTO", "MANUAL"] = Field("AUTO", description="Mode de régulation clim")
     climatisation: Literal["OFF", "HEAT", "COOL"] = Field("OFF", description="État de la clim")
-    climatisation_intensity: float = Field(0.0, ge=0, le=100, description="Puissance de la clim en %")
+    temperature_de_regulation: float = Field(22.0, ge=10, le=35, description="Température cible pour le thermostat")
 
 class Configuration(BaseModel):
     temp_threshold_high: float = Field(26.0, ge=15, le=40, description="Seuil clim Froid")

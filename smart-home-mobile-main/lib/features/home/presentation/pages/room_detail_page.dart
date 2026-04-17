@@ -244,27 +244,60 @@ class RoomDetailPage extends ConsumerWidget {
                                 const SizedBox(height: 32),
                                 Row(
                                   children: [
-                                    const Icon(LucideIcons.wind,
+                                    const Icon(LucideIcons.thermometer,
                                         size: 16, color: Colors.grey),
                                     const SizedBox(width: 8),
-                                    Text('Puissance du flux',
+                                    Text('Température cible',
                                         style: Theme.of(context).textTheme.labelSmall),
                                     const Spacer(),
-                                    Text('${room.climatisationIntensity.round()}%',
+                                    Text('${room.temperatureDeRegulation.toStringAsFixed(1)}°C',
                                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.blueAccent)),
+                                            color: Colors.orangeAccent)),
                                   ],
                                 ),
-                                Slider(
-                                  value: room.climatisationIntensity,
-                                  min: 0,
-                                  max: 100,
-                                  divisions: 10,
-                                  activeColor: Colors.blueAccent,
-                                  inactiveColor: Colors.white10,
-                                  onChanged: (val) =>
-                                      api.setClimIntensity(roomId, val),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _buildControlButton(
+                                      icon: LucideIcons.minus,
+                                      onPressed: () => api.setTargetTemp(
+                                        roomId,
+                                        (room.temperatureDeRegulation - 0.5)
+                                            .clamp(10, 35),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.white10),
+                                      ),
+                                      child: Text(
+                                        '${room.temperatureDeRegulation.toStringAsFixed(1)}°',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    _buildControlButton(
+                                      icon: LucideIcons.plus,
+                                      onPressed: () => api.setTargetTemp(
+                                        roomId,
+                                        (room.temperatureDeRegulation + 0.5)
+                                            .clamp(10, 35),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -308,6 +341,21 @@ class RoomDetailPage extends ConsumerWidget {
               ),
         ),
       ],
+    );
+  }
+
+  Widget _buildControlButton(
+      {required IconData icon, required VoidCallback onPressed}) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white10),
+        color: Colors.white.withValues(alpha: 0.05),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white70, size: 20),
+        onPressed: onPressed,
+      ),
     );
   }
 }

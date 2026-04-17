@@ -4,6 +4,7 @@ import '../providers/house_state_provider.dart';
 import '../widgets/weather_section.dart';
 import '../widgets/energy_section.dart';
 import '../widgets/room_card.dart';
+import 'config_ip_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -52,8 +53,10 @@ class HomePage extends ConsumerWidget {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.blue),
-                      onPressed: () => ref.refresh(houseStateProvider),
+                      icon: const Icon(Icons.settings, color: Colors.blueAccent),
+                      onPressed: () {
+                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConfigIpPage()));
+                      },
                     ),
                   ),
                 ],
@@ -140,19 +143,34 @@ class HomePage extends ConsumerWidget {
         error: (err, stack) => Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.wifi_off, color: Colors.red, size: 64),
+          const Icon(Icons.wifi_off, color: Colors.white54, size: 64),
           const SizedBox(height: 16),
           Text('Impossible de se connecter au serveur',
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(err.toString(),
-              style: const TextStyle(color: Colors.white24, fontSize: 10)),
+          const Text('Vérifiez que le backend est lancé et que l\'IP est correcte.',
+              style: TextStyle(color: Colors.white54, fontSize: 12)),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => ref.refresh(houseStateProvider),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
-          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => ref.refresh(houseStateProvider),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white10),
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                label: const Text('Réessayer', style: TextStyle(color: Colors.white)),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConfigIpPage()));
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                icon: const Icon(Icons.settings, color: Colors.white),
+                label: const Text('Réseau', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          )
         ])),
       ),
     );

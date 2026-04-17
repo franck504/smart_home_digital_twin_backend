@@ -24,6 +24,26 @@ python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAP
 # Simuler la soirée (Présence au salon, faible luminosité)
 python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 22.0, 'presence': True, 'luminosity': 50}, 'cuisine': {'temperature': 20.0, 'presence': False, 'luminosity': 10}})); c.disconnect()"
 
+## 🌡️ Contrôle Thermostat (Température de Régulation)
+# Régler la consigne du salon à 25°C
+curl -X POST "http://localhost:8000/control/salon/climatisation/target_temp?temp=25"
+
+# Régler la consigne de la cuisine à 20°C
+curl -X POST "http://localhost:8000/control/cuisine/climatisation/target_temp?temp=20"
+
+# Forcer le mode MANUAL (COOL) dans le salon
+curl -X POST "http://localhost:8000/control/salon/climatisation/set?value=COOL"
+
+# Repasser le salon en AUTO
+curl -X POST "http://localhost:8000/control/salon/climatisation/mode?mode=AUTO"
+
+## 💡 Contrôle Éclairage
+# Allumer la lumière du salon
+curl -X POST "http://localhost:8000/control/salon/light?state=true"
+
+# Éteindre la lumière de la cuisine
+curl -X POST "http://localhost:8000/control/cuisine/light?state=false"
+
 ## ⚡ Gestion Énergétique (Basculement Solaire/Réseau)
 # Simuler une batterie CRITIQUE (Passage sur RÉSEAU)
 curl -X POST "http://localhost:8000/control/energy/battery?level=15"

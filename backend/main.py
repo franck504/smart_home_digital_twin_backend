@@ -71,7 +71,7 @@ async def sync_and_broadcast():
             room_id: {
                 "lights": room.lights,
                 "climatisation": room.climatisation,
-                "climatisation_intensity": room.climatisation_intensity
+                "temperature_de_regulation": room.temperature_de_regulation
             } for room_id, room in current_state.rooms.items()
         }
     }
@@ -118,20 +118,19 @@ async def set_climatisation(room: str, value: Literal["OFF", "HEAT", "COOL"] = Q
         r = current_state.rooms[room]
         r.climatisation = value
         r.climatisation_mode = "MANUAL"
-        r.climatisation_intensity = 0.0 if value == "OFF" else 100.0
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "value": value}
     return {"status": "error", "message": "Room not found"}
 
-@app.post("/control/{room}/climatisation/intensity")
-async def set_clim_intensity(room: str, intensity: float = Query(..., ge=0, le=100)):
+@app.post("/control/{room}/climatisation/target_temp")
+async def set_target_temp(room: str, temp: float = Query(..., ge=10, le=35)):
     if room in current_state.rooms:
         r = current_state.rooms[room]
-        r.climatisation_intensity = intensity
-        r.climatisation_mode = "MANUAL"
-        if intensity == 0: r.climatisation = "OFF"
+        r.temperature_de_regulation = temp
+        r.climatisation_mode = "AUTO" # On repasse en AUTO quand on change la consigne ? 
+        # Ou on reste en MANUAL ? Généralement changer la consigne fait partie du mode AUTO.
         await sync_and_broadcast()
-        return {"status": "ok", "room": room, "intensity": intensity}
+        return {"status": "ok", "room": room, "target_temp": temp}
     return {"status": "error", "message": "Room not found"}
 
 @app.post("/control/energy/battery")

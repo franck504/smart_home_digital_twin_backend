@@ -1,9 +1,9 @@
 class ApiConstants {
-  // Use 10.0.2.2 for Android Emulator to access host's localhost.
-  // Use your computer's local IP (e.g., 192.168.1.XX) for physical devices.
-  static const String baseUrl = 'http://10.169.109.181:8000';
-  static const String wsUrl = 'ws://10.169.109.181:8000/ws';
+  static String currentIp = '10.169.109.181'; // IP par défaut
+  static String get baseUrl => 'http://$currentIp:8000';
+  static String get wsUrl => 'ws://$currentIp:8000/ws';
 }
+
 
 
 

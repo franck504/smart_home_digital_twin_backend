@@ -47,25 +47,27 @@ def calculate_energy_strategy(state: HouseState, weather_data: dict):
                 
     return state
 
-def update_room_climatisation(room: RoomState, threshold_high: float, threshold_low: float):
+def update_room_climatisation(room: RoomState):
     """
-    Régulation indépendante de la climatisation d'une pièce.
+    Régulation par thermostat avec hystérésis de 0.5°C.
     """
     if room.climatisation_mode == "MANUAL":
         return room
         
     temp = room.temperature
-    if temp > threshold_high:
+    target = room.temperature_de_regulation
+    tolerance = 0.5
+    
+    if temp > target + tolerance:
         room.climatisation = "COOL"
-        diff = temp - threshold_high
-        room.climatisation_intensity = min(100.0, diff * 20.0)
-    elif temp < threshold_low:
+    elif temp < target - tolerance:
         room.climatisation = "HEAT"
-        diff = threshold_low - temp
-        room.climatisation_intensity = min(100.0, diff * 20.0)
-    else:
+    elif abs(temp - target) < 0.1: # Proximité immédiate
         room.climatisation = "OFF"
-        room.climatisation_intensity = 0.0
+    
+    # Note: On laisse le mode actuel si on est dans la zone d'ombre de l'hystérésis
+    # sauf si on est très proche de la cible.
+    
     return room
 
 def process_all_climatisation(state: HouseState):
@@ -73,9 +75,5 @@ def process_all_climatisation(state: HouseState):
     Met à jour la climatisation pour TOUTES les pièces de la maison.
     """
     for room_id in state.rooms:
-        state.rooms[room_id] = update_room_climatisation(
-            state.rooms[room_id], 
-            state.config.temp_threshold_high, 
-            state.config.temp_threshold_low
-        )
+        state.rooms[room_id] = update_room_climatisation(state.rooms[room_id])
     return state
