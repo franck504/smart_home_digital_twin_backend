@@ -115,8 +115,11 @@ async def set_clim_mode(room: str, mode: Literal["AUTO", "MANUAL"] = Query(...))
     """
     Permet de basculer la logique de thermostat d'une pièce spécifique entre automatique et manuel.
     """
+    global current_state
     if room in current_state.rooms:
         current_state.rooms[room].climatisation_mode = mode
+        if mode == "AUTO":
+            current_state = process_all_climatisation(current_state)
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "mode": mode}
     return {"status": "error", "message": "Room not found"}
@@ -141,10 +144,15 @@ async def set_target_temp(room: str, temp: float = Query(..., ge=10, le=35)):
     Définit la température de consigne souhaitée pour la pièce spécifiée.
     Cette action replace automatiquement la régulation de la pièce en mode intelligent 'AUTO'.
     """
+    global current_state
     if room in current_state.rooms:
         r = current_state.rooms[room]
         r.temperature_de_regulation = temp
         r.climatisation_mode = "AUTO" 
+        
+        # Forcer l'évaluation immédiate avant de diffuser l'état
+        current_state = process_all_climatisation(current_state)
+        
         await sync_and_broadcast()
         return {"status": "ok", "room": room, "target_temp": temp}
     return {"status": "error", "message": "Room not found"}
