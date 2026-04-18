@@ -1,59 +1,81 @@
-# 🏠 Commandes Utiles - Jumeau Numérique Smart Home
+====================================================================
+           ANTISÈCHE DES COMMANDES - JUMEAU NUMÉRIQUE
+====================================================================
+Ici sont répertoriées TOUTES les façons de communiquer avec le backend, 
+classées par protocole réseau.
 
-## 🚀 Démarrage du Système
-# Démarrer les serveurs (API, MQTT, DB)
-sudo systemctl start docker
-export DOCKER_HOST=unix:///var/run/docker.sock
-docker compose up -d
+REMARQUE: L'IP utilisée ici est 127.0.0.1 par défaut (machine locale). 
+Remplacez par l'IP de votre machine physique (ex: 192.168.1.X) si vous 
+testez depuis un téléphone ou Wokwi.
 
-# Lancer la simulation automatique (Capteurs aléatoires)
-source backend/venv/bin/activate
-python3 test_mqtt_sim.py &
+--------------------------------------------------------------------
+1. PROTOCOLE HTTP (REST API) - Requêtes ponctuelles de Contrôle
+--------------------------------------------------------------------
 
-## 🌡️ Simulation Manuelle (Contrôle par zone)
-# Simuler une vague de chaleur (Chaud dans le salon)
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 32.0, 'presence': True, 'luminosity': 800}, 'cuisine': {'temperature': 24.0, 'presence': False, 'luminosity': 200}})); c.disconnect()"
+[RÉCEPTION]
+Obtenir tout l'état de la maison :
+> curl -s -X GET "http://127.0.0.1:8000/state"
 
-# Simuler un froid intense (Partout)
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 15.0, 'presence': True, 'luminosity': 400}, 'cuisine': {'temperature': 14.0, 'presence': True, 'luminosity': 150}})); c.disconnect()"
 
-## 💡 Simulation de Luminosité & Présence
-# Simuler le matin (Lumière dans la cuisine, personne au salon)
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 21.0, 'presence': False, 'luminosity': 100}, 'cuisine': {'temperature': 22.0, 'presence': True, 'luminosity': 1200}})); c.disconnect()"
+[MODIFICATION / ACTIONNEURS MOTEURS]
+Allumer/Éteindre une lampe principale (Valeurs : true | false)
+> curl -X POST "http://127.0.0.1:8000/control/salon/light?state=true"
 
-# Simuler la soirée (Présence au salon, faible luminosité)
-python3 -c "import paho.mqtt.client as mqtt, json; c=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2); c.connect('localhost'); c.publish('home/sensors', json.dumps({'salon': {'temperature': 22.0, 'presence': True, 'luminosity': 50}, 'cuisine': {'temperature': 20.0, 'presence': False, 'luminosity': 10}})); c.disconnect()"
+Modifier le Mode Thermostat (Valeurs : AUTO | MANUAL)
+> curl -X POST "http://127.0.0.1:8000/control/salon/climatisation/mode?mode=AUTO"
 
-## 🌡️ Contrôle Thermostat (Température de Régulation)
-# Régler la consigne du salon à 25°C
-curl -X POST "http://localhost:8000/control/salon/climatisation/target_temp?temp=25"
+Forcer l'état mécanique de la Clim (Valeurs : OFF | HEAT | COOL)
+> curl -X POST "http://127.0.0.1:8000/control/salon/climatisation/set?value=HEAT"
 
-# Régler la consigne de la cuisine à 20°C
-curl -X POST "http://localhost:8000/control/cuisine/climatisation/target_temp?temp=20"
+Définir la cible du Thermostat Auto (Valeurs : float entre 10.0 et 35.0)
+> curl -X POST "http://127.0.0.1:8000/control/salon/climatisation/target_temp?temp=21.0"
 
-# Forcer le mode MANUAL (COOL) dans le salon
-curl -X POST "http://localhost:8000/control/salon/climatisation/set?value=COOL"
 
-# Repasser le salon en AUTO
-curl -X POST "http://localhost:8000/control/salon/climatisation/mode?mode=AUTO"
+[MODIFICATION / SIMULATION & CAPTEURS & ÉNERGIE]
+Simuler le pourcentage de Batterie (Valeurs : float entre 0.0 et 100.0)
+> curl -X POST "http://127.0.0.1:8000/control/energy/battery?level=15.0"
 
-## 💡 Contrôle Éclairage
-# Allumer la lumière du salon
-curl -X POST "http://localhost:8000/control/salon/light?state=true"
+Simuler une détection de Présence (Valeurs : true | false)
+> curl -X POST "http://127.0.0.1:8000/control/salon/presence?state=true"
 
-# Éteindre la lumière de la cuisine
-curl -X POST "http://localhost:8000/control/cuisine/light?state=false"
+Simuler la température physique (Valeurs : float, ex 22.5)
+> curl -X POST "http://127.0.0.1:8000/control/salon/temperature?value=22.5"
 
-## ⚡ Gestion Énergétique (Basculement Solaire/Réseau)
-# Simuler une batterie CRITIQUE (Passage sur RÉSEAU)
-curl -X POST "http://localhost:8000/control/energy/battery?level=15"
+Simuler la luxométrie/lumière physique (Valeurs : float positif)
+> curl -X POST "http://127.0.0.1:8000/control/salon/luminosity?value=800.0"
 
-# Simuler une batterie PLEINE (Repassage sur SOLAIRE)
-curl -X POST "http://localhost:8000/control/energy/battery?level=100"
 
-## ⏹️ Arrêt du Système
-# Arrêter le simulateur
-pkill -f test_mqtt_sim.py
+--------------------------------------------------------------------
+2. PROTOCOLE MQTT (Spécial Cartes IoT ex: ESP32)
+--------------------------------------------------------------------
 
-# Arrêter les serveurs Docker
-docker compose down
+[RÉCEPTION / ACTIONNEURS]
+Écouter continuellement ce que l'ESP32 doit allumer ou éteindre.
+(Ceci affiche un JSON global des états lumières & clims).
+> mosquitto_sub -h 127.0.0.1 -p 1883 -t "home/actuators"
+
+
+[MODIFICATION / CAPTEURS]
+Pousser les données physiques de la salle vers le backend central.
+(L'ESP32 envoie continuellement ces 3 variables par pièce).
+> mosquitto_pub -h 127.0.0.1 -p 1883 -t "home/sensors" -m '{"salon": {"temperature": 23.5, "luminosity": 400.0, "presence": true}}'
+
+
+--------------------------------------------------------------------
+3. PROTOCOLE WEBSOCKET (Temps réel - Flutter, Unity, 3D Web)
+--------------------------------------------------------------------
+La particularité architecturale de ce Jumeau Numérique est que le WebSockets
+sert EXCLUSIVEMENT aux flux sortants (Réception ultra-rapide). Les modifications entrantes passent par HTTP.
+
+[RÉCEPTION]
+Se connecter au flux continu ("Live Feed"). Le backend poussera l'état 
+complet (Identique à celui HTTP GET /state) à *chaque* changement capteur.
+Commande via l'utilitaire websocat :
+> websocat ws://127.0.0.1:8000/ws
+
+
+[MODIFICATION]
+L'architecture actuelle bloque la modification directe via WebSocket afin
+de compartimenter la sécurité. 
+Solution : Envoyer la requête via API HTTP (Test 1), la réponse sera poussée
+en temps réel par ce WebSocket vers les afficheurs visuels.
