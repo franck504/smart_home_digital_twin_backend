@@ -167,6 +167,21 @@ async def set_battery(level: float = Query(..., ge=0, le=100)):
     await process_state_update()
     return {"status": "ok", "battery_level": level}
 
+@app.post("/control/{room}/presence", tags=["Capteurs (Simulation)"], summary="Forcer l'état de présence (Simulation)")
+async def set_presence(room: str, state: bool = Query(...)):
+    """
+    API de simulation : Simule l'entrée ou la sortie d'une personne dans la salle.
+    Normalement, cette donnée vient des capteurs via MQTT.
+    """
+    global current_state
+    if room in current_state.rooms:
+        current_state.rooms[room].presence = state
+        
+        # Un changement de présence déclenche le recalcule d'énergie (ex: lumières auto-éteintes si Solaire)
+        await process_state_update()
+        return {"status": "ok", "room": room, "presence": state}
+    return {"status": "error", "message": "Room not found"}
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
