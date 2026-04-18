@@ -171,15 +171,37 @@ async def set_battery(level: float = Query(..., ge=0, le=100)):
 async def set_presence(room: str, state: bool = Query(...)):
     """
     API de simulation : Simule l'entrée ou la sortie d'une personne dans la salle.
-    Normalement, cette donnée vient des capteurs via MQTT.
     """
     global current_state
     if room in current_state.rooms:
         current_state.rooms[room].presence = state
-        
-        # Un changement de présence déclenche le recalcule d'énergie (ex: lumières auto-éteintes si Solaire)
         await process_state_update()
         return {"status": "ok", "room": room, "presence": state}
+    return {"status": "error", "message": "Room not found"}
+
+@app.post("/control/{room}/temperature", tags=["Capteurs (Simulation)"], summary="Forcer le thermomètre ambiant (Simulation)")
+async def set_sensor_temperature(room: str, value: float = Query(...)):
+    """
+    API de simulation : Simule un changement physique de température dans la pièce.
+    Déclenchera instantanément le thermostat si on dépasse la consigne.
+    """
+    global current_state
+    if room in current_state.rooms:
+        current_state.rooms[room].temperature = value
+        await process_state_update()
+        return {"status": "ok", "room": room, "temperature": value}
+    return {"status": "error", "message": "Room not found"}
+
+@app.post("/control/{room}/luminosity", tags=["Capteurs (Simulation)"], summary="Forcer le capteur de lumière (Simulation)")
+async def set_sensor_luminosity(room: str, value: float = Query(..., ge=0)):
+    """
+    API de simulation : Simule le niveau de lux ambiant.
+    """
+    global current_state
+    if room in current_state.rooms:
+        current_state.rooms[room].luminosity = value
+        await process_state_update()
+        return {"status": "ok", "room": room, "luminosity": value}
     return {"status": "error", "message": "Room not found"}
 
 @app.websocket("/ws")
