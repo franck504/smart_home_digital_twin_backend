@@ -1,47 +1,53 @@
-# Jumeau Numérique - Smart Home Backend 🏠🤖
+# Jumeau Numérique - Smart Home
 
-Bienvenue dans le dépôt du "Cerveau" de notre Jumeau Numérique. Ce backend centralise les données capteurs, gère l'intelligence énergétique et pilote la maison en temps réel.
+Ce dépôt centralise l'écosystème logiciel du projet de Jumeau Numérique pour une maison intelligente. Il orchestre les flux de données entre la simulation physique (Wokwi), la visualisation 3D (React Three Fiber) et l'interface de contrôle mobile (Flutter).
 
-## 🚀 Démarrage Rapide (En 2 minutes)
+## Structure du Projet
 
-### 1. Pré-requis
-Avoir **Docker** et **Docker Compose** installés sur votre machine.
+Le projet est organisé en domaines isolés pour faciliter le développement et le déploiement :
 
-### 2. Clonage et Lancement
+- **`backend/`** : API FastAPI gérant la logique métier, la persistance des données (InfluxDB) et l'orchestration MQTT/WebSockets.
+- **`smart-home-mobile-main/`** : Application mobile développée avec Flutter.
+- **`smart-house-3d-main/`** : Interface de visualisation 3D interactive (React Three Fiber).
+- **`wokwi/`** : Code source et schémas de la simulation matérielle (ESP32).
+- **`docs/`** : Documentation technique, plans et rédaction du mémoire de fin d'études.
+- **`infra/`** : Fichiers de configuration de l'infrastructure (MQTT, Docker).
+
+## Démarrage Rapide
+
+### Pré-requis
+- Docker et Docker Compose
+- Python 3.11+ (pour le développement local)
+
+### Lancement via Docker
+
 ```bash
 git clone https://github.com/franck504/smart_home_digital_twin_backend.git
 cd smart_home_digital_twin_backend
 
-# Lancer le projet
-docker compose up -d --build
+# Construction et lancement de l'infrastructure
+docker-compose up -d --build
 ```
 
-### 💡 Note pour Linux/Parrot OS
-Si vous obtenez une erreur de connexion au socket Docker, lancez cette commande avant : `export DOCKER_HOST=unix:///var/run/docker.sock`
+### Accès aux Services
+- **API (Swagger)** : [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Base de données (InfluxDB)** : [http://localhost:8086](http://localhost:8086)
+- **Flux temps réel** : `ws://localhost:8000/ws`
 
-### 3. Accès aux interfaces
-- **API Interactive (Swagger) :** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Base de données (InfluxDB) :** [http://localhost:8086](http://localhost:8086) (Login: `admin` / Pass: `adminpassword`)
-- **Flux Temps Réel :** `ws://localhost:8000/ws`
+## Développement Backend
 
-## 🧪 Tests Unitaires
-Pour valider la logique du "Cerveau" sans matériel :
-```bash
-export PYTHONPATH=$PYTHONPATH:.
-pytest backend/tests/test_logic.py
-```
+Pour travailler sur le backend sans Docker :
 
-## 📖 Documentation détaillée
-Tout ce dont vous avez besoin pour comprendre le projet se trouve dans le dossier [**`/guides`**](file:///guides/) :
-- [Architecture du système](file:///guides/ARCHITECTURE.md)
-- [Guide pour l'équipe Mobile/3D (API)](file:///guides/API_REFERENCE.md)
-- [Guide pour l'équipe IoT (MQTT/Wokwi)](file:///guides/IOT_INTEGRATION.md)
-- [Procédure de Test complète](file:///guides/TEST_PROCEDURE.md)
+1. Créer un environnement virtuel : `python -m venv venv`
+2. Installer les dépendances : `pip install -r backend/requirements.txt`
+3. Lancer le serveur : `uvicorn backend.app.main:app --reload`
 
-## 🛠️ Développement
-Si vous souhaitez modifier le code :
-1. Créez un environnement virtuel : `python -m venv venv`
-2. Installez les dépendances : `pip install -r backend/requirements.txt`
+## Documentation
+
+Des guides détaillés sont disponibles dans le dossier `/guides` pour faciliter l'onboarding sur les différentes parties du système :
+- Architecture système
+- Référence API (Mobile/3D)
+- Intégration IoT (MQTT/Wokwi)
 
 ---
-*Projet réalisé dans le cadre du M2 OCC 2026.*
+*Projet réalisé dans le cadre du Master 2 OCC 2026.*

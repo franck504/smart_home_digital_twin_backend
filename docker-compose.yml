@@ -1,23 +1,19 @@
 services:
-  # Broker MQTT (Mosquitto)
+  # MQTT Broker (Mosquitto) - Core communication hub
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: jumeau_mqtt
     ports:
       - "1883:1883"
-      # - "9001:9001" # Optionnel pour websockets mqtt
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-      # - ./mosquitto_data:/mosquitto/data
-      # - ./mosquitto_log:/mosquitto/log
+      - ./infra/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
-  # Backend FastAPI
+  # Backend FastAPI - Digital Twin Orchestrator
   backend:
     build: .
     container_name: jumeau_backend
     env_file: .env
     environment:
-
       - INFLUXDB_URL=http://influxdb:8086
       - DOCKER_HOST=unix:///var/run/docker.sock
     ports:
@@ -26,7 +22,7 @@ services:
       - mosquitto
       - influxdb
 
-  # Base de données (InfluxDB)
+  # Database (InfluxDB 2.0) - Time-series storage for sensors
   influxdb:
     image: influxdb:2.7
     container_name: jumeau_influx

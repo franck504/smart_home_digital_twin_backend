@@ -1,20 +1,22 @@
-# Image de base Python légère
+# Use a slim Python 3.11 image for performance and security
 FROM python:3.11-slim
 
-# Définir le répertoire de travail
+# Set working directory inside the container
 WORKDIR /app
 
-# Copier le fichier des dépendances
+# Copy dependency file first to leverage Docker cache
 COPY backend/requirements.txt .
 
-# Installer les dépendances
+# Install dependencies without storing cache to keep image small
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier tout le projet (pour accéder aux modèles et à la logique)
-COPY . .
+# Copy only the backend application code (Isolation)
+# This prevents mobile/3D source code from being included in the API image.
+COPY backend/app ./app
 
-# Exposer le port FastAPI
+# Expose the FastAPI port
 EXPOSE 8000
 
-# Commande de lancement (on utilise le mode module pour les imports relatifs)
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Launch the application using the module path
+# uvicorn app.main:app allows for relative imports within the app package.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

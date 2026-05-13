@@ -1,16 +1,29 @@
-# smart_home_mobile
+# Smart Home Mobile
 
-A new Flutter project.
+Application mobile développée avec Flutter pour le contrôle et la surveillance en temps réel du jumeau numérique de la maison intelligente.
 
-## Getting Started
+## Fonctionnalités
+- Visualisation de l'état des capteurs par pièce (température, humidité, présence, luminosité).
+- Contrôle des actuateurs (lumières, climatisation).
+- Configuration des seuils et des modes de régulation automatique.
+- Synchronisation en temps réel via WebSockets avec le backend.
 
-This project is a starting point for a Flutter application.
+## Installation
 
-A few resources to get you started if this is your first Flutter project:
+### Pré-requis
+- Flutter SDK (version compatible avec le `pubspec.yaml`).
+- Android Studio / VS Code avec extensions Flutter.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Démarrage
+1. Installer les dépendances :
+   ```bash
+   flutter pub get
+   ```
+2. Configurer l'adresse IP du backend dans l'application (via la page de configuration dédiée).
+3. Lancer l'application :
+   ```bash
+   flutter run
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture
+Le projet suit une architecture modulaire pour séparer la logique de présentation (widgets) de la logique de communication (services API/WS).
