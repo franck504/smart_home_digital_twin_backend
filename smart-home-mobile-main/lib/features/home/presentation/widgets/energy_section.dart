@@ -93,25 +93,29 @@ class EnergySection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    height: 14,
-                    width: (MediaQuery.of(context).size.width - 80) * (energy.batteryLevel / 100),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isLowBattery 
-                          ? [Colors.redAccent, Colors.orangeAccent]
-                          : [Colors.greenAccent, Colors.tealAccent],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: (isLowBattery ? Colors.redAccent : Colors.greenAccent).withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        height: 14,
+                        width: constraints.maxWidth * (energy.batteryLevel / 100),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isLowBattery 
+                              ? [Colors.redAccent, Colors.orangeAccent]
+                              : [Colors.greenAccent, Colors.tealAccent],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isLowBattery ? Colors.redAccent : Colors.greenAccent).withValues(alpha: 0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),

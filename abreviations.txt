@@ -1,0 +1,20 @@
+AI          : Artificial Intelligence
+API         : Application Programming Interface
+BIM         : Building Information Modeling
+DHT22       : Digital Humidity and Temperature (Sensor)
+ESP32       : Electronic System on Chip (Microcontrôleur)
+HVAC        : Heating, Ventilation, and Air Conditioning
+HTTP        : HyperText Transfer Protocol
+IoT         : Internet of Things
+LDR         : Light Dependent Resistor (Capteur de luminosité)
+LED         : Light Emitting Diode
+ML          : Machine Learning
+MQTT        : Message Queuing Telemetry Transport
+PIR         : Passive Infrared (Capteur de présence)
+RE2020      : Réglementation Environnementale 2020
+REST        : Representational State Transfer
+SSL         : Secure Sockets Layer
+TLS         : Transport Layer Security
+UI          : User Interface
+UX          : User Experience
+WS          : WebSocket

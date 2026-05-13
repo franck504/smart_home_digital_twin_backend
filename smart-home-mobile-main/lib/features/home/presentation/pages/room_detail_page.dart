@@ -80,6 +80,7 @@ class RoomDetailPage extends ConsumerWidget {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Container(
+                                width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 12, horizontal: 8),
                                 decoration: BoxDecoration(
@@ -88,9 +89,10 @@ class RoomDetailPage extends ConsumerWidget {
                                       color:
                                           Colors.white.withValues(alpha: 0.1)),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                child: Wrap(
+                                  alignment: WrapAlignment.spaceAround,
+                                  spacing: 16.0,
+                                  runSpacing: 16.0,
                                   children: [
                                     _buildHeroStat(
                                       context,
@@ -167,6 +169,7 @@ class RoomDetailPage extends ConsumerWidget {
                                 style: Theme.of(context).textTheme.labelSmall),
                             trailing: Switch(
                               value: room.lights,
+                              activeThumbColor: Colors.yellow,
                               onChanged: (val) => api.toggleLight(roomId, val),
                             ),
                           ),
@@ -214,14 +217,17 @@ class RoomDetailPage extends ConsumerWidget {
                             padding: const EdgeInsets.all(20.0),
                             child: Column(
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    runSpacing: 16.0,
                                   children: [
                                     _ModeButton(
                                       icon: LucideIcons.power,
                                       label: 'OFF',
                                       isSelected: room.climatisation == 'OFF',
+                                      activeColor: Colors.grey,
                                       onPressed: () =>
                                           api.setClimatisation(roomId, 'OFF'),
                                     ),
@@ -229,6 +235,7 @@ class RoomDetailPage extends ConsumerWidget {
                                       icon: LucideIcons.snowflake,
                                       label: 'COOL',
                                       isSelected: room.climatisation == 'COOL',
+                                      activeColor: Colors.blueAccent,
                                       onPressed: () =>
                                           api.setClimatisation(roomId, 'COOL'),
                                     ),
@@ -236,10 +243,12 @@ class RoomDetailPage extends ConsumerWidget {
                                       icon: LucideIcons.flame,
                                       label: 'HEAT',
                                       isSelected: room.climatisation == 'HEAT',
+                                      activeColor: Colors.deepOrangeAccent,
                                       onPressed: () =>
                                           api.setClimatisation(roomId, 'HEAT'),
                                     ),
                                   ],
+                                ),
                                 ),
                                 const SizedBox(height: 32),
                                 Row(
@@ -257,8 +266,12 @@ class RoomDetailPage extends ConsumerWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    runSpacing: 16.0,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
                                     _buildControlButton(
                                       icon: LucideIcons.minus,
@@ -268,7 +281,6 @@ class RoomDetailPage extends ConsumerWidget {
                                             .clamp(10, 35),
                                       ),
                                     ),
-                                    const SizedBox(width: 20),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 24, vertical: 12),
@@ -288,7 +300,6 @@ class RoomDetailPage extends ConsumerWidget {
                                             ),
                                       ),
                                     ),
-                                    const SizedBox(width: 20),
                                     _buildControlButton(
                                       icon: LucideIcons.plus,
                                       onPressed: () => api.setTargetTemp(
@@ -298,6 +309,7 @@ class RoomDetailPage extends ConsumerWidget {
                                       ),
                                     ),
                                   ],
+                                ),
                                 ),
                               ],
                             ),
@@ -364,12 +376,14 @@ class _ModeButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
+  final Color activeColor;
   final VoidCallback onPressed;
 
   const _ModeButton({
     required this.icon,
     required this.label,
     required this.isSelected,
+    required this.activeColor,
     required this.onPressed,
   });
 
@@ -384,17 +398,17 @@ class _ModeButton extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.blueAccent.withValues(alpha: 0.15)
+                  ? activeColor.withValues(alpha: 0.15)
                   : Colors.white.withValues(alpha: 0.05),
               border: Border.all(
-                color: isSelected ? Colors.blueAccent : Colors.white10,
+                color: isSelected ? activeColor : Colors.white10,
                 width: 2,
               ),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: isSelected ? Colors.blueAccent : Colors.white54,
+              color: isSelected ? activeColor : Colors.white54,
               size: 24,
             ),
           ),
@@ -404,7 +418,7 @@ class _ModeButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? Colors.blueAccent : Colors.grey,
+              color: isSelected ? activeColor : Colors.grey,
             ),
           ),
         ],

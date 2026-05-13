@@ -53,9 +53,10 @@ class HomePage extends ConsumerWidget {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.blueAccent),
+                      icon: const Icon(Icons.settings, color: Colors.white),
                       onPressed: () {
-                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConfigIpPage()));
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const ConfigIpPage()));
                       },
                     ),
                   ),
@@ -69,7 +70,7 @@ class HomePage extends ConsumerWidget {
 
               // Énergie (Batterie & Source)
               EnergySection(energy: state.energy),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
 
               // Titre Section Pièces
               Row(
@@ -82,22 +83,23 @@ class HomePage extends ConsumerWidget {
                   Text(
                     '${state.rooms.length} Actives',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.blue,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               // Grille des pièces
               GridView.builder(
+                padding: const EdgeInsets.only(top: 8),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  mainAxisSpacing: 12,
                   crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
                   childAspectRatio: 1.0,
                 ),
                 itemCount: state.rooms.length,
@@ -121,7 +123,7 @@ class HomePage extends ConsumerWidget {
                 child: Row(
                   children: [
                     const Icon(Icons.auto_awesome,
-                        color: Colors.blue, size: 20),
+                        color: Colors.white, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -139,7 +141,16 @@ class HomePage extends ConsumerWidget {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 60.0),
+            child: LinearProgressIndicator(
+              backgroundColor: Colors.white10,
+              color: Colors.white,
+              minHeight: 2,
+            ),
+          ),
+        ),
         error: (err, stack) => Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -148,7 +159,8 @@ class HomePage extends ConsumerWidget {
           Text('Impossible de se connecter au serveur',
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          const Text('Vérifiez que le backend est lancé et que l\'IP est correcte.',
+          const Text(
+              'Vérifiez que le backend est lancé et que l\'IP est correcte.',
               style: TextStyle(color: Colors.white54, fontSize: 12)),
           const SizedBox(height: 24),
           Row(
@@ -156,18 +168,23 @@ class HomePage extends ConsumerWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () => ref.refresh(houseStateProvider),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white10),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.white10),
                 icon: const Icon(Icons.refresh, color: Colors.white),
-                label: const Text('Réessayer', style: TextStyle(color: Colors.white)),
+                label: const Text('Réessayer',
+                    style: TextStyle(color: Colors.white)),
               ),
               const SizedBox(width: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConfigIpPage()));
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ConfigIpPage()));
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent),
                 icon: const Icon(Icons.settings, color: Colors.white),
-                label: const Text('Réseau', style: TextStyle(color: Colors.white)),
+                label:
+                    const Text('Réseau', style: TextStyle(color: Colors.white)),
               ),
             ],
           )

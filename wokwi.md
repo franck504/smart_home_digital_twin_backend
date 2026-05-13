@@ -36,3 +36,60 @@ Ces composants réagissent physiquement selon les ordres reçus du Backend.
 ## 🔋 4. (Optionnel) Simulation Énergétique de la Maison
 Bien que l'énergie soit au niveau global de la maison, un espace Wokwi peut héberger des potentiomètres pour surcharger le système :
 - **Potentiomètre Linéaire (Slide Pot) :** Permettant d'imposer un certain niveau de batterie (0% à 100%) afin de forcer le test du basculement automatique `Grid` / `Solar`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Viewed wokwi.md:1-39
+Viewed main.py:1-263
+Viewed .env:1-12
+
+C'est le moment de donner vie à votre "objet physique" virtuel ! Nous allons transformer un **ESP32** dans Wokwi en un nœud IoT intelligent qui communique avec votre backend.
+
+Voici le plan pour configurer votre simulation Wokwi de manière à ce qu'elle interagisse avec le Jumeau Numérique et l'application mobile.
+
+# 📋 Plan d'implémentation Wokwi
+
+## 1. Préparation du matériel (Wokwi Canvas)
+Vous devrez ajouter les composants suivants sur votre interface Wokwi :
+*   **ESP32** (Le cœur du système)
+*   **DHT22** : Pour la température ambiante (broche `15`)
+*   **Photo-résistance (LDR)** : Pour la luminosité (broche `34`)
+*   **Capteur PIR** : Pour simuler la présence (broche `13`)
+*   **LED Jaune** : Pour l'éclairage de la pièce (broche `2`)
+*   **LED RGB** : Pour l'état de la clim (R:`4`, G:`16`, B:`17`)
+
+## 2. Développement du Code C++ (Arduino)
+Je vais vous fournir un code complet qui :
+*   Se connecte au **WiFi simulé** de Wokwi.
+*   Se connecte à votre **Broker MQTT** (en utilisant l'IP de votre machine).
+*   **Publie** les données des capteurs vers `home/sensors` toutes les 5 secondes.
+*   **S'abonne** à `home/actuators` pour allumer la LED (lumière) et changer la couleur de la LED RGB selon l'état de la clim (Froid=Bleu, Chaud=Rouge).
+
+## 3. Configuration Réseau (Lien Browser <-> Local)
+> [!IMPORTANT]
+> Pour que Wokwi (dans votre navigateur) puisse parler à votre Mosquitto (dans Docker), vous devez utiliser la **passerelle Wokwi** ou l'adresse IP locale de votre machine (ex: `192.168.1.XX`).
+
+### Questions pour finaliser :
+1.  **Quelle est l'adresse IP locale** de votre ordinateur (celle que vous avez tapée dans les paramètres de l'application mobile) ? Je l'intégrerai directement dans le code pour vous.
+2.  Voulez-vous que je génère le code pour une pièce spécifique (ex: **"salon"**) ou un code générique facile à copier ?
+
+**Une fois ces détails confirmés, je vous fournis le bloc de code complet à copier-coller dans Wokwi !**

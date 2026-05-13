@@ -1,0 +1,208 @@
+https://wokwi.com/projects/461679177425406977
+┌─[franck@f504]─[~]
+└──╼ $./wokwigw-linux
+
+import network
+import time
+from machine import Pin, ADC
+import dht
+import ujson
+from umqtt.simple import MQTTClient
+
+# --- CONFIGURATION PUBLIQUE ---
+MQTT_SERVER = "broker.hivemq.com" 
+ROOM_ID     = "salon"
+# Utilisation de votre identifiant unique pour éviter les interférences
+TOPIC_SUB   = "franck504/
+home/actuators"
+TOPIC_PUB   = "franck504/home/sensors"
+
+# --- PINS (Identiques à votre montage) ---
+sensor_dht = dht.DHT22(Pin(15))
+pir        = Pin(13, Pin.IN)
+ldr        = ADC(Pin(34))
+ldr.atten(ADC.ATTN_11DB) 
+
+led_light = Pin(2, Pin.OUT)
+led_cool  = Pin(17, Pin.OUT)
+led_heat  = Pin(4, Pin.OUT)
+
+# --- MQTT CALLBACK ---
+def sub_cb(topic, msg):
+print("\n[MQTT] Message reçu :", msg)
+try:
+data = ujson.loads(msg)
+if ROOM_ID in data["rooms"]:
+	room_data = data["rooms"][ROOM_ID]
+	# Contrôle Physique
+	led_light.value(1 if room_data["lights"] else 0)
+	clim = room_data["climatisation"]
+	led_cool.value(1 if clim == "COOL" else 0)
+	led_heat.value(1 if clim == "HEAT" else 0)
+	print("-> État mis à jour : Light={}, Clim={}".format(room_data["lights"], clim))
+	except Exception as e:
+	print("Erreur JSON :", e)
+	
+	# --- CONNEXION WIFI ---
+	print("Connexion au WiFi Wokwi-GUEST", end="")
+	sta_if = network.WLAN(network.STA_IF)
+	sta_if.active(True)
+	sta_if.connect('Wokwi-GUEST', '')
+	while not sta_if.isconnected():
+		print(".", end="")
+		time.sleep(0.5)
+		print(" Connecté !")
+		
+		# --- CONNEXION MQTT ---
+		print("Connexion à HiveMQ...", end="")
+		# On utilise un ID client unique
+		client = MQTTClient("esp32-franck-504", MQTT_SERVER)
+		client.set_callback(sub_cb)
+		try:
+		client.connect()
+		client.subscribe(TOPIC_SUB)
+		print(" SUCCESS !")
+		except Exception as e:
+		print(" Erreur :", e)
+		
+		# --- BOUCLE PRINCIPALE ---
+		last_msg = 0
+		while True:
+			try:
+			client.check_msg() # Écouter les ordres
+			
+			# Envoi des capteurs toutes les 5 secondes
+			if (time.time() - last_msg) > 5:
+				sensor_dht.measure()
+				payload = {
+					ROOM_ID: {
+						"temperature": sensor_dht.temperature(),
+						"presence": pir.value() == 1,
+						"luminosity": int((ldr.read() / 4095) * 1000)
+					}
+				}
+				client.publish(TOPIC_PUB, ujson.dumps(payload))
+				print("[MQTT] Envoi capteurs :", payload)
+				last_msg = time.time()
+				
+				except Exception as e:
+				print("Erreur :", e)
+				time.sleep(5)
+				
+				time.sleep(0.1)
+				
+				
+				
+
+
+
+
+				{
+					"version": 1,
+					"author": "Franck - Jumeau Numérique",
+					"editor": "wokwi",
+					"parts": [
+						{ "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -9.6, "left": 139.24, "attrs": {} },
+						{
+							"type": "wokwi-dht22",
+							"id": "dht",
+							"top": -52.8,
+							"left": -123.3,
+							"rotate": 270,
+							"attrs": {}
+						},
+						{
+							"type": "wokwi-photoresistor-sensor",
+							"id": "ldr",
+							"top": 281.6,
+							"left": -162.4,
+							"attrs": {}
+						},
+						{
+							"type": "wokwi-pir-motion-sensor",
+							"id": "pir",
+							"top": 107.88,
+							"left": -139.5,
+							"rotate": 270,
+							"attrs": {}
+						},
+						{
+							"type": "wokwi-led",
+							"id": "led_light",
+							"top": 166.6,
+							"left": 280,
+							"rotate": 90,
+							"attrs": { "color": "yellow", "label": "Lumiere" }
+						},
+						{
+							"type": "wokwi-led",
+							"id": "led_red",
+							"top": 61,
+							"left": 280,
+							"rotate": 90,
+							"attrs": { "color": "red", "label": "Chaud" }
+						},
+						{
+							"type": "wokwi-led",
+							"id": "led_blue",
+							"top": 109,
+							"left": 280,
+							"rotate": 90,
+							"attrs": { "color": "blue", "label": "Froid" }
+						},
+						{
+							"type": "wokwi-vcc",
+							"id": "vcc1",
+							"top": 279.16,
+							"left": 105.6,
+							"rotate": 180,
+							"attrs": {}
+						},
+						{
+							"type": "wokwi-gnd",
+							"id": "gnd1",
+							"top": -163.2,
+							"left": 191.4,
+							"rotate": 180,
+							"attrs": {}
+						}
+					],
+					"connections": [
+						[ "esp:TX", "$serialMonitor:RX", "", [] ],
+						[ "esp:RX", "$serialMonitor:TX", "", [] ],
+						[ "esp:34", "ldr:OUT", "orange", [ "v-100", "h80" ] ],
+						[ "esp:5V", "vcc1:VCC", "red", [ "h-28.65", "v86.4" ] ],
+						[ "led_red:C", "esp:GND.3", "green", [ "h0", "v-9.2" ] ],
+						[ "led_blue:C", "esp:GND.3", "green", [ "h-9.6", "v-57.2", "h-9.6" ] ],
+						[ "led_light:C", "esp:GND.3", "green", [ "h-19.2", "v-114.8" ] ],
+						[ "dht:VCC", "esp:3V3", "red", [ "h0" ] ],
+						[
+							"esp:15",
+							"dht:SDA",
+							"green",
+							[
+								"v0",
+								"h9.6",
+								"v38.4",
+								"h-9.6",
+								"v182.4",
+								"h-451.2",
+								"v-422.4",
+								"h220.8",
+								"v48",
+								"h-38.4"
+							]
+						],
+						[ "led_blue:A", "esp:17", "green", [ "h-28.8", "v-28.8" ] ],
+						[ "esp:4", "led_red:A", "green", [ "h9.6", "v-38.4" ] ],
+						[ "esp:2", "led_light:A", "green", [ "h19.2", "v48", "h9.6" ] ],
+						[ "esp:13", "pir:OUT", "green", [ "h0" ] ],
+						[ "pir:GND", "esp:GND.1", "black", [ "h0" ] ],
+						[ "pir:VCC", "esp:3V3", "red", [ "h153.6", "v-144" ] ],
+						[ "ldr:VCC", "esp:3V3", "red", [ "h67.2", "v-278.4" ] ],
+						[ "ldr:GND", "esp:GND.1", "black", [ "h115.2", "v-163.6" ] ],
+						[ "ldr:AO", "esp:34", "green", [ "h124.8", "v-269.5" ] ],
+						[ "gnd1:GND", "esp:GND.2", "black", [ "v49.4", "h67.6", "v86.4" ] ]
+					],
+					"dependencies": {}
+				}

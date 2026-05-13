@@ -17,7 +17,7 @@ services:
     container_name: jumeau_backend
     env_file: .env
     environment:
-      - MQTT_BROKER=mosquitto
+
       - INFLUXDB_URL=http://influxdb:8086
       - DOCKER_HOST=unix:///var/run/docker.sock
     ports:

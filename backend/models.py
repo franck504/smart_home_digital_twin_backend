@@ -17,6 +17,9 @@ class Configuration(BaseModel):
     temp_threshold_high: float = Field(26.0, ge=15, le=40, description="Seuil clim Froid")
     temp_threshold_low: float = Field(18.0, ge=5, le=30, description="Seuil clim Chaud")
     battery_critical_threshold: float = Field(20.0, ge=0, le=50, description="Seuil batterie critique %")
+    auto_light_off: bool = Field(True, description="Extinction automatique si absence")
+    auto_clim_off: bool = Field(True, description="Extinction climatisation si absence")
+    lux_threshold: float = Field(200.0, description="Seuil d'allumage automatique (Lux)")
 
 class Energy(BaseModel):
     source: Literal["solar", "grid"] = Field("solar", description="Source d'énergie actuelle")
@@ -27,6 +30,8 @@ class Weather(BaseModel):
     description: str = Field("Ensoleillé", description="Description météo")
     icon: str = Field("01d", description="Code icône OpenWeather")
     solar_prediction: float = Field(0.5, ge=0, le=1, description="Indice d'ensoleillement")
+    location: str = Field("Fianarantsoa", description="Nom de la ville")
+    last_updated: str = Field("", description="Date de dernière mise à jour")
 
 class HouseState(BaseModel):
     rooms: Dict[str, RoomState] = {

@@ -1,0 +1,13 @@
+Broker MQTT : Serveur intermédiaire agissant comme un hub de messagerie pour distribuer les données entre les objets connectés et le serveur.
+Docker : Plateforme de conteneurisation permettant de packager et d'exécuter des applications dans des environnements isolés et reproductibles.
+FastAPI : Framework moderne et performant basé sur Python pour la création rapide d'interfaces de programmation (API).
+Flutter : Kit de développement logiciel (SDK) créé par Google pour concevoir des applications multiplateformes à partir d'une base de code unique.
+Hystérésis : Principe de régulation utilisé dans les thermostats pour éviter les basculements trop fréquents en introduisant une marge de tolérance autour de la consigne.
+InfluxDB : Base de données de séries temporelles conçue pour stocker et traiter de grands volumes de données horodatées provenant de capteurs.
+Jumeau Numérique (Digital Twin) : Réplique virtuelle dynamique d'un système physique, synchronisée en temps réel grâce à des flux de données IoT.
+MQTT : Protocole de messagerie léger et efficace basé sur le modèle publication/abonnement, optimisé pour les réseaux à faible bande passante.
+MicroPython : Implémentation allégée du langage Python 3 optimisée pour s'exécuter sur des microcontrôleurs comme l'ESP32.
+Smart Building : Concept de bâtiment intelligent utilisant des technologies connectées pour améliorer l'efficacité énergétique, la sécurité et le confort des occupants.
+Three.js : Bibliothèque JavaScript permettant de créer et d'afficher des scènes 3D interactives dans un navigateur web.
+WebSocket : Protocole de communication offrant un canal bidirectionnel et permanent entre un client et un serveur pour des mises à jour en temps réel.
+Wokwi : Environnement de simulation électronique permettant de tester des circuits et du code embarqué sans matériel physique.

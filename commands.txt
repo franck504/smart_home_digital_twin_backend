@@ -44,6 +44,9 @@ Simuler la température physique (Valeurs : float, ex 22.5)
 Simuler la luxométrie/lumière physique (Valeurs : float positif)
 > curl -X POST "http://127.0.0.1:8000/control/salon/luminosity?value=800.0"
 
+Simuler un changement météorologique général (Valeurs : temp, desc, icon, solar)
+> curl -X POST "http://127.0.0.1:8000/control/weather?temp=-10.5&desc=Neige&icon=13d&solar=0.0"
+
 
 --------------------------------------------------------------------
 2. PROTOCOLE MQTT (Spécial Cartes IoT ex: ESP32)
@@ -79,3 +82,22 @@ L'architecture actuelle bloque la modification directe via WebSocket afin
 de compartimenter la sécurité. 
 Solution : Envoyer la requête via API HTTP (Test 1), la réponse sera poussée
 en temps réel par ce WebSocket vers les afficheurs visuels.
+
+
+
+[MONITORING & DEBUGGING]
+
+sudo systemctl start docker
+
+export DOCKER_HOST=unix:///var/run/docker.sock
+
+docker compose up -d
+
+docker compose logs -f backend
+
+cd ~ && ./wokwigw-linux
+
+export DOCKER_HOST=unix:///var/run/docker.sock && docker run --rm -it eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "franck504/home/#" -v
+
+
+docker compose down
