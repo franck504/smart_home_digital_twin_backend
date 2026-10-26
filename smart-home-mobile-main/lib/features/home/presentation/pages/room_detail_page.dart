@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../providers/house_state_provider.dart';
+import '../widgets/room_image_background.dart';
 
 class RoomDetailPage extends ConsumerWidget {
   final String roomId;
@@ -33,12 +34,11 @@ class RoomDetailPage extends ConsumerWidget {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Image de fond
-                      Image.asset(
-                        'assets/$roomId.webp',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(color: Colors.grey[900]),
+                      // Image de fond avec fallback dégradé stylisé et halo d'ambiance
+                      RoomImageBackground(
+                        roomId: roomId,
+                        isHeader: true,
+                        isLightOn: room.lights,
                       ),
                       // Overlay Dégradé
                       const DecoratedBox(
@@ -100,6 +100,13 @@ class RoomDetailPage extends ConsumerWidget {
                                       '${room.temperature}°C',
                                       'Temp.',
                                       Colors.orangeAccent,
+                                    ),
+                                    _buildHeroStat(
+                                      context,
+                                      LucideIcons.droplet,
+                                      '${room.humidity.round()}%',
+                                      'Humidité',
+                                      Colors.cyanAccent,
                                     ),
                                     _buildHeroStat(
                                       context,
