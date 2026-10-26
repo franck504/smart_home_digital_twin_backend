@@ -25,8 +25,9 @@ Testing philosophy
 """
 
 import pytest
+from unittest.mock import patch, AsyncMock
 from app.models.house import HouseState, RoomState
-from app.services.logic import calculate_energy_strategy, process_all_climatisation
+from app.services.logic import calculate_energy_strategy, process_all_climatisation, get_weather_forecast
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -302,3 +303,60 @@ class TestClimatisation:
             assert room.climatisation == "COOL", (
                 f"Room '{room_id}' was not processed by the regulation loop"
             )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Weather Forecast & Heuristics
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestWeatherForecast:
+    """
+    Tests for weather fetching and heuristic solar predictions.
+    """
+
+    @pytest.mark.asyncio
+    async def test_weather_fallback_when_key_is_default(self):
+        """When no key or placeholder key is set, returns simulated data gracefully."""
+        with patch("app.services.logic.OPENWEATHER_API_KEY", "votre_cle_ici"):
+            weather = await get_weather_forecast()
+            assert "outside_temp" in weather
+            assert weather["solar_prediction"] == 0.8
+            assert "Simulé" in weather["description"]
+
+    @pytest.mark.asyncio
+    async def test_weather_api_nighttime_zeros_solar_prediction(self):
+        """At night (icon ends in 'n'), solar prediction is strictly 0.0."""
+        from unittest.mock import MagicMock
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "main": {"temp": 18.0},
+            "weather": [{"description": "ciel clair", "icon": "01n"}],
+            "clouds": {"all": 0}
+        }
+
+        with patch("app.services.logic.OPENWEATHER_API_KEY", "valid_secret_key"), \
+             patch("httpx.AsyncClient.get", new_callable=AsyncMock, return_value=mock_response):
+            weather = await get_weather_forecast()
+            assert weather["outside_temp"] == 18.0
+            assert weather["solar_prediction"] == 0.0
+            assert weather["description"] == "Ciel clair"
+
+    @pytest.mark.asyncio
+    async def test_weather_api_cloud_cover_reduces_solar_prediction(self):
+        """Daytime solar prediction scales inversely with cloud coverage percentage."""
+        from unittest.mock import MagicMock
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "main": {"temp": 28.0},
+            "weather": [{"description": "nuageux", "icon": "04d"}],
+            "clouds": {"all": 70}  # 70% clouds -> 30% solar yield
+        }
+
+        with patch("app.services.logic.OPENWEATHER_API_KEY", "valid_secret_key"), \
+             patch("httpx.AsyncClient.get", new_callable=AsyncMock, return_value=mock_response):
+            weather = await get_weather_forecast()
+            assert weather["outside_temp"] == 28.0
+            assert weather["solar_prediction"] == 0.3
+

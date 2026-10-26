@@ -1,49 +1,127 @@
 # Référence API - Jumeau Numérique 📱💻
 
-Ce document détaille les points d'entrée (endpoints) permettant d'interagir avec le backend.
+Ce document détaille les points d'entrée (endpoints HTTP REST et WebSockets) permettant d'interagir avec le backend orchestrateur.
 
-## 1. Consultation de l'État
+Documentation Swagger interactive disponible sur : `http://localhost:8000/docs`.
+
+---
+
+## 1. Consultation de l'État Global
+
 ### `GET /state`
-Récupère l'intégralité des données en temps réel.
-- **Réponse :** Objet JSON contenant `sensors`, `energy`, `controls` et `config`.
-- **Exemple :**
+Récupère l'intégralité de l'état du jumeau numérique en temps réel.
+
+- **Réponse :** `HouseState`
+- **Exemple de réponse :**
   ```json
   {
-    "sensors": { "temperature": 24.5, "presence_salon": true },
-    "controls": { "climatisation": "COOL", "intensity": 45.0 }
+    "rooms": {
+      "salon": {
+        "temperature": 22.0,
+        "humidity": 50.0,
+        "presence": false,
+        "luminosity": 300.0,
+        "lights": false,
+        "climatisation": "OFF",
+        "climatisation_mode": "AUTO",
+        "temperature_de_regulation": 22.0
+      },
+      "cuisine": { ... },
+      "chambre": { ... },
+      "douche": { ... }
+    },
+    "config": {
+      "temp_threshold_high": 26.0,
+      "temp_threshold_low": 18.0,
+      "battery_critical_threshold": 20.0,
+      "auto_light_off": true,
+      "auto_clim_off": true,
+      "lux_threshold": 200.0
+    },
+    "energy": {
+      "source": "solar",
+      "battery_level": 100.0,
+      "consumption": 0.0
+    },
+    "weather": {
+      "outside_temp": 24.5,
+      "description": "Ciel dégagé",
+      "icon": "01d",
+      "solar_prediction": 0.8,
+      "location": "Fianarantsoa",
+      "last_updated": "2026-10-26 10:00:00"
+    }
   }
   ```
 
-## 2. Contrôle Interactif
-### `POST /control/light/{room}`
-Allume ou éteint la lumière.
-- **Paramètres :** `room` (string: salon/cuisine), `state` (bool: true/false).
+---
 
-### `POST /control/climatisation/mode`
-Bascule le mode de régulation.
-- **Paramètres :** `mode` (string: AUTO/MANUAL).
+## 2. Contrôle des Actionneurs & Pièces
 
-### `POST /control/climatisation/set`
-Force un état thermique (Chaleur, Froid ou Off).
-- **Paramètres :** `value` (string: OFF/HEAT/COOL).
+### `POST /control/{room}/light`
+Allume ou éteint la lumière dans la pièce spécifiée.
+- **Path Param :** `room` (ex: `salon`, `cuisine`, `chambre`, `douche`)
+- **Query Param :** `state` (boolean: `true` / `false`)
+- **Retour :** `{"status": "ok", "room": "salon", "lights": true}`
 
-### `POST /control/climatisation/intensity`
-Régle précisément la puissance de la clim.
-- **Paramètres :** `intensity` (float: 0.0 à 100.0).
+### `POST /control/{room}/climatisation/mode`
+Bascule le mode de régulation du thermostat de la pièce.
+- **Path Param :** `room`
+- **Query Param :** `mode` (`"AUTO"` ou `"MANUAL"`)
+- **Retour :** `{"status": "ok", "room": "salon", "mode": "AUTO"}`
 
-## 3. Configuration de l'IA (Seuils)
-### `POST /config/thresholds`
-Définit les limites de température pour l'IA.
-- **Paramètres :** `high` (float: seuil froid), `low` (float: seuil chaud).
+### `POST /control/{room}/climatisation/set`
+Force manuellement l'état du chauffage/climatisation (bascule automatiquement le mode en `MANUAL`).
+- **Path Param :** `room`
+- **Query Param :** `value` (`"OFF"`, `"HEAT"`, `"COOL"`)
+- **Retour :** `{"status": "ok", "room": "salon", "value": "COOL"}`
 
-### `POST /control/energy/battery`
-Simule un niveau de charge de batterie.
-- **Paramètres :** `level` (float: 0.0 à 100.0).
-
-## 4. Flux Temps Réel (WebSockets)
-### `WS /ws`
-Connectez votre application (3D ou Mobile) à cette URL pour recevoir l'état complet à chaque changement (push).
-- **Format :** JSON (Même format que `GET /state`).
+### `POST /control/{room}/climatisation/target_temp`
+Définit la température de consigne thermostat pour la pièce (bascule automatiquement le mode en `AUTO`).
+- **Path Param :** `room`
+- **Query Param :** `temp` (float entre `10.0` et `35.0` °C)
+- **Retour :** `{"status": "ok", "room": "salon", "target_temp": 21.5}`
 
 ---
-> **Documentation Interactive :** Toutes ces API sont testables en direct sur [http://localhost:8000/docs](http://localhost:8000/docs) une fois le projet lancé.
+
+## 3. Configuration & Énergie
+
+### `POST /control/config/auto_light`
+Active ou désactive la règle d'économie d'énergie coupant les lumières en cas d'absence.
+- **Query Param :** `state` (boolean: `true` / `false`)
+- **Retour :** `{"status": "ok", "auto_light_off": true}`
+
+### `POST /config/weather/location`
+Met à jour la ville pour les prévisions météo et déclenche le recalcul de la stratégie énergétique.
+- **Query Param :** `city` (string, ex: `Fianarantsoa`, `Antananarivo`)
+- **Retour :** `{"status": "ok", "location": "Antananarivo", "weather": {...}}`
+
+---
+
+## 4. Endpoints de Simulation & Tests
+
+Ces endpoints permettent de tester les scénarios réactifs depuis l'application mobile ou des scripts :
+
+### `POST /control/{room}/presence`
+Simule la présence humaine dans une pièce.
+- **Path Param :** `room`
+- **Query Param :** `state` (boolean: `true` / `false`)
+
+### `POST /control/energy/battery`
+Simule un niveau de charge de batterie pour tester les basculements Solaire $\leftrightarrow$ Réseau.
+- **Query Param :** `level` (float entre `0.0` et `100.0` %)
+
+### `POST /control/weather`
+Surcharge manuellement les conditions météo.
+- **Query Params optionnels :** `temp` (float), `desc` (string), `icon` (string), `solar` (float entre 0 et 1)
+
+---
+
+## 5. Flux Temps Réel (WebSockets)
+
+### `WS /ws`
+Canal bidirectionnel temps réel pour les interfaces (Mobile Flutter et Tableau de bord 3D).
+
+- **Au raccordement :** Le serveur envoie immédiatement l'état complet (`HouseState` en JSON).
+- **En continu :** Chaque modification (détection de présence, changement de température, basculement d'énergie, actionneur) est immédiatement diffusée en push à tous les clients connectés.
+- **Format du message :** JSON identique à la réponse de `GET /state`.

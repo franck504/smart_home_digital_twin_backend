@@ -22,44 +22,54 @@ def on_connect(client, userdata, flags, rc, properties):
     client.subscribe(MQTT_TOPIC_SENSORS)
     client.subscribe(MQTT_TOPIC_ACTUATORS)
 
-def on_message(client, userdata, msg):
+async def apply_sensor_update(payload: dict):
     """
-    Handles incoming MQTT messages.
-    Updates the global state based on sensor data or physical actuator changes (Wokwi).
+    Safely mutates room sensor state on the asyncio event loop
+    and triggers downstream logic & broadcast.
+    """
+    from app.services.logic import process_state_update
+    for room_id, data in payload.items():
+        if room_id in current_state.rooms:
+            room = current_state.rooms[room_id]
+            room.temperature = float(data.get("temperature", room.temperature))
+            room.presence = bool(data.get("presence", room.presence))
+            room.luminosity = float(data.get("luminosity", room.luminosity))
+            room.humidity = float(data.get("humidity", room.humidity))
+    await process_state_update()
+
+async def apply_actuator_feedback(payload: dict):
+    """
+    Safely synchronizes physical actuator feedback (e.g. Wokwi button pressed)
+    on the asyncio event loop and notifies WebSockets without triggering an MQTT echo.
     """
     from app.core.ws import sync_and_broadcast
-    from app.services.logic import process_state_update
-    
+    if "rooms" not in payload:
+        return
+    changed = False
+    for room_id, data in payload["rooms"].items():
+        if room_id in current_state.rooms:
+            if "lights" in data and current_state.rooms[room_id].lights != data["lights"]:
+                current_state.rooms[room_id].lights = bool(data["lights"])
+                changed = True
+    if changed:
+        await sync_and_broadcast(send_mqtt=False)
+
+def on_message(client, userdata, msg):
+    """
+    Handles incoming MQTT messages on the Paho network loop thread.
+    Dispatches thread-safe asynchronous updates to the main FastAPI loop.
+    """
+    import app.core.state as state_module
+    target_loop = state_module.main_loop
+
     try:
         topic = msg.topic
         payload = json.loads(msg.payload.decode())
-        
-        if topic == MQTT_TOPIC_SENSORS:
-            # Update sensors per room
-            for room_id, data in payload.items():
-                if room_id in current_state.rooms:
-                    room = current_state.rooms[room_id]
-                    room.temperature = data.get("temperature", room.temperature)
-                    room.presence = data.get("presence", room.presence)
-                    room.luminosity = data.get("luminosity", room.luminosity)
-            
-            if main_loop:
-                asyncio.run_coroutine_threadsafe(process_state_update(), main_loop)
 
-        elif topic == MQTT_TOPIC_ACTUATORS:
-            # Physical Button Sync: If Wokwi reports a manual light change
-            if "rooms" in payload:
-                changed = False
-                for room_id, data in payload["rooms"].items():
-                    if room_id in current_state.rooms:
-                        # If physical state differs from digital twin state
-                        if "lights" in data and current_state.rooms[room_id].lights != data["lights"]:
-                            current_state.rooms[room_id].lights = data["lights"]
-                            changed = True
-                
-                # Broadcast changes to mobile apps via WebSockets without looping MQTT
-                if changed and main_loop:
-                    asyncio.run_coroutine_threadsafe(sync_and_broadcast(send_mqtt=False), main_loop)
+        if topic == MQTT_TOPIC_SENSORS and target_loop:
+            asyncio.run_coroutine_threadsafe(apply_sensor_update(payload), target_loop)
+        elif topic == MQTT_TOPIC_ACTUATORS and target_loop:
+            asyncio.run_coroutine_threadsafe(apply_actuator_feedback(payload), target_loop)
     except Exception as e:
         print(f"MQTT Error in message handling: {e}")
 
