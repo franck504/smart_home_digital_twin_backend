@@ -104,3 +104,17 @@ async def set_auto_light_off(state: bool = Query(...)):
     current_state.config.auto_light_off = state
     await process_state_update()
     return {"status": "ok", "auto_light_off": state}
+
+@router.post("/control/config/auto_clim", tags=["Configuration"], summary="Toggle auto-clim-off")
+async def set_auto_clim_off(state: bool = Query(...)):
+    """Enable/Disable power saving rule that turns off HVAC when empty."""
+    current_state.config.auto_clim_off = state
+    await process_state_update()
+    return {"status": "ok", "auto_clim_off": state}
+
+@router.post("/control/config/lux_threshold", tags=["Configuration"], summary="Set automatic lighting lux threshold")
+async def set_lux_threshold(threshold: float = Query(...)):
+    """Set ambient lux threshold for automatic lighting."""
+    current_state.config.lux_threshold = threshold
+    await process_state_update()
+    return {"status": "ok", "lux_threshold": threshold}

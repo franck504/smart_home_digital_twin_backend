@@ -88,6 +88,36 @@ class ApiService {
     }
   }
 
+  /// Active ou désactive l'extinction automatique des lumières en cas d'absence.
+  Future<void> setAutoLightOff(bool state) async {
+    final url = _uri('/control/config/auto_light', {'state': state.toString()});
+    final response = await _client.post(url).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode != 200) {
+      throw Exception('Échec de la configuration auto-light: ${response.statusCode}');
+    }
+  }
+
+  /// Active ou désactive l'extinction automatique de la climatisation en cas d'absence.
+  Future<void> setAutoClimOff(bool state) async {
+    final url = _uri('/control/config/auto_clim', {'state': state.toString()});
+    final response = await _client.post(url).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode != 200) {
+      throw Exception('Échec de la configuration auto-clim: ${response.statusCode}');
+    }
+  }
+
+  /// Définit le seuil de luminosité en Lux pour l'allumage automatique.
+  Future<void> setLuxThreshold(double threshold) async {
+    final url = _uri('/control/config/lux_threshold', {'threshold': threshold.toString()});
+    final response = await _client.post(url).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode != 200) {
+      throw Exception('Échec de la configuration du seuil lux: ${response.statusCode}');
+    }
+  }
+
   /// Simule une présence humaine dans une pièce (endpoint de simulation).
   Future<void> setPresence(String room, bool state) async {
     final url = _uri('/control/$room/presence', {'state': state.toString()});

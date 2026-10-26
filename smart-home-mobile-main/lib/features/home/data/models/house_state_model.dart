@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 /// Représentation complète de l'état du jumeau numérique dans l'application mobile.
 class HouseState {
   final Map<String, RoomState> rooms;
