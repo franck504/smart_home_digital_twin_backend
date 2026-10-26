@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/house_state_model.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class EnergySection extends StatelessWidget {
   final Energy energy;
