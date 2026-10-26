@@ -8,8 +8,8 @@ venv/
 
 # Docker
 .docker/
-data/
-influx_data/
+/data/
+/influx_data/
 
 # IDE
 .vscode/
