@@ -19,14 +19,25 @@ Le projet est organisé en domaines isolés pour faciliter le développement et 
 - Docker et Docker Compose
 - Python 3.11+ (pour le développement local)
 
-### Lancement via Docker
+### Lancement Rapide (Recommandé)
+
+Un script automatisé configure l'environnement, démarre les conteneurs et lance la simulation :
+
+```bash
+./scripts/run_test.sh
+```
+
+### Lancement Manuel via Docker Compose
 
 ```bash
 git clone https://github.com/franck504/smart_home_digital_twin_backend.git
 cd smart_home_digital_twin_backend
 
-# Construction et lancement de l'infrastructure
-docker-compose up -d --build
+# 1. Préparer les variables d'environnement
+cp .env.example .env
+
+# 2. Construction et lancement de l'infrastructure
+docker compose up -d --build
 ```
 
 ### Accès aux Services

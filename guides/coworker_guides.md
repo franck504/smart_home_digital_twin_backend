@@ -1,66 +1,87 @@
-# Guide d'Intégration Jumeau Numérique (Backend)
+# Guide d'Onboarding Collaborateurs 🤝🚀
 
-Ce document explique comment envoyer et recevoir des données du "Cerveau" (FastAPI).
+Bienvenue dans le projet de **Jumeau Numérique Smart Home** ! Ce guide synthétise l'essentiel pour vous permettre d'intégrer rapidement votre composant (Mobile, 3D, ou IoT) avec le backend.
 
-## 1. Modèle de données global (JSON)
-Le backend maintient l'état suivant :
+---
+
+## 1. Modèle de Données Partagé (JSON)
+
+Toutes les interfaces (REST, WebSocket, InfluxDB) se conforment à la structure `HouseState` suivante :
+
 ```json
 {
-  "sensors": {
-    "temperature": 22.5,
-    "presence_salon": true,
-    "presence_cuisine": false,
-    "luminosity": 500
-  },
-  "energy": {
-    "source": "solar", // "solar" ou "grid"
-    "battery_level": 85,
-    "switch_coefficient": 0.75
-  },
-  "controls": {
-    "climatisation_mode": "AUTO", // "AUTO" ou "MANUAL"
-    "climatisation": "OFF", // "OFF", "HEAT", "COOL"
-    "climatisation_intensity": 0.0, // 0.0 à 100.0
-    "lights_salon": "ON",
-    "lights_cuisine": "OFF"
+  "rooms": {
+    "salon": {
+      "temperature": 22.0,
+      "humidity": 50.0,
+      "presence": false,
+      "luminosity": 300.0,
+      "lights": false,
+      "climatisation": "OFF",
+      "climatisation_mode": "AUTO",
+      "temperature_de_regulation": 22.0
+    },
+    "cuisine": { ... },
+    "chambre": { ... },
+    "douche": { ... }
   },
   "config": {
     "temp_threshold_high": 26.0,
     "temp_threshold_low": 18.0,
-    "battery_critical_threshold": 20.0
+    "battery_critical_threshold": 20.0,
+    "auto_light_off": true,
+    "auto_clim_off": true,
+    "lux_threshold": 200.0
+  },
+  "energy": {
+    "source": "solar",
+    "battery_level": 100.0,
+    "consumption": 0.0
+  },
+  "weather": {
+    "outside_temp": 24.5,
+    "description": "Ciel dégagé",
+    "icon": "01d",
+    "solar_prediction": 0.8,
+    "location": "Fianarantsoa",
+    "last_updated": "2026-10-26 10:00:00"
   }
 }
 ```
 
-## 2. Pour l'équipe IoT (Wokwi / ESP32)
-* **Protocole :** MQTT
-* **Broker :** `localhost` (ou IP du PC) port 1883
-* **Topics :**
-  - Mesures : `home/sensors` (Publier le JSON des capteurs)
-  - Commandes : `home/actuators` (Souscrire pour recevoir le JSON suivant) :
-    ```json
-    {
-      "climatisation": "OFF",
-      "energy_source": "solar",
-      "lights_salon": true,
-      "lights_cuisine": false
-    }
-    ```
+---
 
-## 3. Pour l'équipe 3D (Three.js) et Mobile
-* **Protocole :** WebSockets
+## 2. Pour les Développeurs Mobile (Flutter) et 3D (React Three Fiber)
+
+### Connexion Temps Réel (WebSockets)
 * **URL :** `ws://localhost:8000/ws`
-* **Fonctionnement :** Dès qu'une donnée change, le backend envoie le JSON global à tous les clients connectés.
-* **Commandes (Mobile) :** 
-  - `POST /control/light/{room}?state=true/false`
-  - `POST /control/climatisation/mode?mode=AUTO/MANUAL`
-  - `POST /control/climatisation/set?value=OFF/HEAT/COOL` (Bascule en MANUAL auto)
-  - `POST /control/climatisation/intensity?intensity=75` (Règle la puissance 0-100%)
-  - `POST /config/thresholds?high=26&low=18` (Règle les seuils automatiques)
-  - `POST /control/energy/battery?level=15` (Simule un niveau de batterie pour test)
-  - Consulter Swagger à `/docs` pour le détail des paramètres.
+* **Comportement :**
+  1. À la connexion, le serveur envoie immédiatement le JSON complet de l'état.
+  2. Chaque mise à jour (capteur, basculement d'énergie, commande) est diffusée en direct (*push*).
 
-## 4. Intelligence Métier
-Le Backend effectue les calculs suivants :
-- Si `prevision_meteo` < seuil ET `batterie` < 20% -> `source = "grid"`.
-- Si `presence` == false -> `lights = "OFF"`.
+### Commandes Interactives (REST API)
+* `POST /control/{room}/light?state=true|false` : Contrôle des lumières par pièce.
+* `POST /control/{room}/climatisation/mode?mode=AUTO|MANUAL` : Mode de régulation thermique.
+* `POST /control/{room}/climatisation/set?value=OFF|HEAT|COOL` : Forcer l'état HVAC.
+* `POST /control/{room}/climatisation/target_temp?temp=22.5` : Définir la consigne thermostat.
+* `POST /config/weather/location?city=NomDeVille` : Changer la localisation météo.
+
+---
+
+## 3. Pour les Développeurs Matériel & Simulation (ESP32 / Wokwi)
+
+* **Protocole :** MQTT (Port `1883`)
+* **Topic de Publication (Capteurs) :** `franck504/home/sensors`
+* **Topic de Souscription (Actionneurs) :** `franck504/home/actuators`
+* Pour plus de détails sur le format des payloads capteurs/actionneurs, consultez [`guides/IOT_INTEGRATION.md`](file:///home/franck/Documents/github_projects/smart_home_digital_twin_backend/guides/IOT_INTEGRATION.md).
+
+---
+
+## 4. Pour les Analystes de Données (InfluxDB & Dashboards)
+
+* **Interface Web :** `http://localhost:8086`
+* **Bucket :** `jumeau_bucket`
+* **Organisation :** `my-org`
+* **Mesures disponibles :**
+  * `room_sensors` : Tags = `room`, Champs = `temperature`, `humidity`, `luminosity`, `presence`.
+  * `energy_state` : Champs = `source`, `battery_level`.

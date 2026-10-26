@@ -1,47 +1,110 @@
 # Guide d'Intégration IoT (MQTT) - Jumeau Numérique 📡🔌
 
-Ce document explique comment connecter un matériel (ESP32, Arduino, Wokwi) au backend du jumeau numérique via le protocole MQTT.
-
-## 1. Paramètres de Connexion
-- **Broker MQTT :** L'adresse IP de votre PC (ou `jumeau_mqtt` dans Docker).
-- **Port :** `1883` (Standard MQTT).
-- **Protocole :** MQTT v3.11 ou v5.
-
-## 2. Envoi des Mesures (Capteurs)
-L'appareil doit publier ses données en JSON toutes les 2 à 10 secondes sur le topic suivant :
-### Topic : `home/sensors`
-- **Format JSON :**
-  ```json
-  {
-    "temperature": 24.5,
-    "presence_salon": true,
-    "presence_cuisine": false,
-    "luminosity": 650.0
-  }
-  ```
-- **Règles :**
-  - La température est en °Celsius.
-  - La luminosité est en Lux.
-  - La présence est un boolean (`true`/`false`).
-
-## 3. Réception des Ordres (Actuateurs)
-L'appareil doit s'abonner (subscribe) au topic suivant pour recevoir les commandes du "Cerveau" :
-### Topic : `home/actuators`
-- **Format JSON :**
-  ```json
-  {
-    "climatisation": "COOL",
-    "climatisation_intensity": 45.0,
-    "energy_source": "solar",
-    "lights_salon": true,
-    "lights_cuisine": false
-  }
-  ```
-- **Actions à effectuer :**
-  - **climatisation :** `OFF`, `HEAT` ou `COOL`.
-  - **climatisation_intensity :** Réglez la vitesse du ventilateur ou le variateur (0 à 100%).
-  - **energy_source :** `solar` (Batterie) ou `grid` (Secteur).
-  - **lights :** `true` (Relais ON) ou `false` (Relais OFF).
+Ce document détaille le protocole de communication MQTT permettant de connecter des microcontrôleurs (ESP32 physique, Arduino, ou simulateur Wokwi) au backend du jumeau numérique.
 
 ---
-> **Conseil :** Si vous utilisez Wokwi, assurez-vous que votre PC a un broker MQTT accessible sur le réseau (Mosquitto).
+
+## 1. Paramètres de Connexion au Broker
+
+* **Broker :** IP de l'hôte (ou `jumeau_mqtt` en réseau interne Docker)
+* **Port :** `1883` (TCP standard, non chiffré pour le prototypage)
+* **Protocole :** MQTT v3.1.1 ou v5.0
+* **Préfixe des Topics :** `franck504/home/`
+
+---
+
+## 2. Envoi des Mesures (Capteurs $\rightarrow$ Backend)
+
+Le microcontrôleur publie périodiquement (toutes les 2 à 5 secondes) l'état mesuré des pièces de la maison.
+
+### Topic : `franck504/home/sensors`
+
+```json
+{
+  "salon": {
+    "temperature": 23.5,
+    "humidity": 45.0,
+    "presence": true,
+    "luminosity": 500.0
+  },
+  "cuisine": {
+    "temperature": 24.0,
+    "humidity": 60.0,
+    "presence": false,
+    "luminosity": 200.0
+  },
+  "chambre": {
+    "temperature": 20.2,
+    "humidity": 50.0,
+    "presence": true,
+    "luminosity": 120.0
+  },
+  "douche": {
+    "temperature": 26.8,
+    "humidity": 82.0,
+    "presence": false,
+    "luminosity": 40.0
+  }
+}
+```
+
+#### Champs acceptés par pièce :
+| Champ | Type | Unité / Format | Description |
+|---|---|---|---|
+| `temperature` | `float` | °Celsius | Température ambiante de la pièce |
+| `humidity` | `float` | % HR | Humidité relative |
+| `presence` | `bool` | `true` / `false` | Détection PIR de présence humaine |
+| `luminosity` | `float` | Lux | Luminosité ambiante |
+
+---
+
+## 3. Réception des Ordres (Backend $\rightarrow$ Actionneurs)
+
+Le microcontrôleur s'abonne à ce topic pour recevoir en temps réel les décisions prises par le jumeau numérique (relais lumières, commandes de climatisation, basculement de source d'énergie).
+
+### Topic : `franck504/home/actuators`
+
+```json
+{
+  "energy_source": "solar",
+  "rooms": {
+    "salon": {
+      "lights": true,
+      "climatisation": "OFF",
+      "temperature_de_regulation": 22.0
+    },
+    "cuisine": {
+      "lights": false,
+      "climatisation": "OFF",
+      "temperature_de_regulation": 22.0
+    },
+    "chambre": {
+      "lights": false,
+      "climatisation": "HEAT",
+      "temperature_de_regulation": 22.0
+    },
+    "douche": {
+      "lights": false,
+      "climatisation": "COOL",
+      "temperature_de_regulation": 22.0
+    }
+  }
+}
+```
+
+---
+
+## 4. Rétroaction Matérielle (Bouton Physique $\rightarrow$ Backend)
+
+Si un occupant appuie sur un **interrupteur physique** connecté à l'ESP32 :
+1. L'ESP32 publie le nouvel état sur `franck504/home/actuators` :
+   ```json
+   {
+     "rooms": {
+       "salon": {
+         "lights": true
+       }
+     }
+   }
+   ```
+2. Le backend intercepte ce changement, met à jour le jumeau numérique et le diffuse instantanément aux applications mobiles via WebSocket **sans renvoyer de message MQTT** (pour éviter les boucles infinies de feedback).

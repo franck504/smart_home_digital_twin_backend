@@ -23,10 +23,13 @@ docker compose up -d --build
 - **InfluxDB (Port 8086) :** La base de données temporelle.
 
 ## 3. Configuration (Variables d'Environnement)
-Vous pouvez modifier ces variables dans le fichier `docker-compose.yml` :
-- `MQTT_BROKER` : `mosquitto` (Lien interne Docker).
+Toutes les variables sont centralisées dans le fichier `.env` (créé à partir de `.env.example`) :
+- `MQTT_BROKER` : `mosquitto` (Lien interne réseau Docker).
 - `INFLUXDB_URL` : `http://influxdb:8086`.
-- `OPENWEATHER_API_KEY` : Votre clé API personnelle.
+- `INFLUXDB_TOKEN` : Jeton d'authentification pour la base InfluxDB.
+- `INFLUXDB_ORG` : Organisation InfluxDB (`my-org`).
+- `INFLUXDB_BUCKET` : Bucket de stockage (`jumeau_bucket`).
+- `OPENWEATHER_API_KEY` : Clé API personnelle OpenWeatherMap (optionnelle, mode simulé automatique si absente).
 
 ## 4. Maintenance et Diagnostics
 - **Voir les logs du cerveau :**
